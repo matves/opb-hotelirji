@@ -6,6 +6,11 @@ import hashlib # računanje MD5 kriptografski hash za gesla
 import psycopg2, psycopg2.extensions, psycopg2.extras
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE) # se znebimo problemov s sumniki
 
+### priklopimo se na bazo postgresql; vnesi svoje up.ime in geslo:
+baza = psycopg2.connect(database='seminarska_matejav', host='audrey.fmf.uni-lj.si', user='matejav', password='onceuponatime')
+baza.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT) # onemogocimo transakcije
+cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)  #kurzor
+
 ######################################################################
 # Konfiguracija
 
@@ -18,64 +23,186 @@ static_dir = "./static"
 
 # Skrivnost za kodiranje cookijev; na zacetku secret=None
 # uporabnik ne ve, kaj je notri, ne more spreminjat, krast
-# odkomentiraj, ko boš nastavil cookie-je:
-# secret = "to skrivnost je zelo tezko uganiti 1094107c907cw982982c42"
-secret = None
+secret = "to skrivnost je zelo tezko uganiti 1094107c907cw982982c421"
 
 ######################################################################
 # Pomožne funkcije: jih ne gledamo, dokler jih ne rabimo ;)
+
+##### Funkcija, ki v cookie spravi sporocilo: to ne vem če sploh rabmo
+
+def password_md5(s):
+    """Vrni MD5 hash danega UTF-8 niza. Gesla vedno spravimo v bazo
+       kodirana s to funkcijo."""
+    h = hashlib.md5()
+    h.update(s.encode('utf-8'))
+    return h.hexdigest()
+
+###### Funkcija, ki preveri, kdo je prijavljen uporabnik: 
+##def get_user(auto_login = True):
+##    """Poglej cookie in ugotovi, kdo je prijavljeni uporabnik,
+##       vrni njegov username in ime. Če ni prijavljen, preusmeri
+##       na stran za prijavo ali vrni None (odvisno od auto_login).
+##    """
+##    # Dobimo username iz piškotka
+##    uporabnisko_ime = bottle.request.get_cookie('uporabnisko_ime', secret=secret)
+##    # Preverimo, ali ta uporabnik obstaja
+##    if uporabnisko_ime is not None:
+##        cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
+##        cur.execute("SELECT uporabnisko_ime, ime, priimek FROM oseba WHERE uporabnisko_ime=%s",
+##                  [uporabnisko_ime])
+##        r = cur.fetchone()
+##        cur.close ()
+##        if r is not None:
+##            # uporabnik obstaja, vrnemo njegove podatke
+##            return r
+##    # Če pridemo do sem, uporabnik ni prijavljen, naredimo redirect
+##    if auto_login:
+##        bottle.redirect('/login/')
+##    else:
+##        return None
+
 
 
 ######################################################################
 # Funkcije, ki obdelajo zahteve odjemalcev.
 
-@bottle.route("/static/<filename:path>")
 def static(filename):
     """Splošna funkcija, ki servira vse statične datoteke iz naslova
        /static/..."""
     return bottle.static_file(filename, root=static_dir)
 
+  
 @bottle.route("/")
 def main():
     """Glavna stran."""
+##    # Iz cookieja dobimo uporabnika (ali ga preusmerimo na login, če
+##    # nima cookija)
+##    (username, ime) = get_user()
+##    # Morebitno sporočilo za uporabnika
+##    sporocilo = get_sporocilo()
+##    # Seznam zadnjih 10 tračev
+##    ts = traci()
+##    # Vrnemo predlogo za glavno stran
     return 'To je glavni dokument, trenutno je še prazen. Pojdi raje na <a href="/login/">ta naslov</a>.'
-    # return bottle.template("main.html", ...)
+##    return bottle.template("main.html",
+##                           ime=ime,
+##                           username=username,
+##                           traci=ts,
+##                           sporocilo=sporocilo)
 
-# to je ce pridemo prvic:
+# to je ko pridemo prvic:
 @bottle.get("/login/")  
 def login_get():
     """Serviraj formo za login."""
-       return bottle.template("login.html",
+    return bottle.template("login.html",
                            napaka=None,   #na zacetku ni username-a in ni napake
-                           username=None)
+                           uporabnisko_ime=None)
+
+## to je ko začne vpisovat noter in preveriš, če je taprav
+@bottle.post("/login/")
+def login_post():
+    """Obdelaj izpolnjeno formo za prijavo"""
+    # Uporabniško ime, ki ga je uporabnik vpisal v formo
+    uporabnisko_ime = bottle.request.forms.uporabnisko_ime
+    geslo = bottle.request.forms.geslo
+    # Izračunamo MD5 hash gesla, ki ga bomo spravili
+    geslo = password_md5(bottle.request.forms.geslo)
+    ##geslo = hashlib.md5(bottle.request.forms.geslo).hexdigest()
     
-#@bottle.post("/login/")
+    # Preverimo, ali se je uporabnik pravilno prijavil: daj mi tega, ki ima ta username in password
+    cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur.execute("SELECT 1 FROM oseba WHERE uporabnisko_ime=%s AND geslo=%s",[uporabnisko_ime, geslo])
+    #mi da prvi rezultat, če je to none, se ni prijavil pravilno
+    if cur.fetchone() is None:    
+        # Username in geslo se ne ujemata
+        print("Username in geslo se ne ujemata.",uporabnisko_ime,geslo)
+        return bottle.template("login.html",
+                               napaka="Nepravilna prijava",
+                               uporabnisko_ime=uporabnisko_ime)
+          #username mu vpišemo nazaj, gesla mu seveda ne bomo nazaj poslali
+    else:
+        # Vse je v redu, nastavimo cookie in preusmerimo na glavno stran
+        print(uporabnisko_ime, geslo)
+        ##cookie: ime cookieja, ime vrednosti, kje je veljaven, kako je zakodiran (nekaj naključnega)
+        bottle.response.set_cookie('uporabnisko_ime', uporabnisko_ime, path='/', secret=secret)
+        bottle.redirect("/")
+        ##pošljemo ga na glavno stran in če bo rpavilno delovala, bo vidla njegov cookie
 
-
+#### to bo implementirano v glavno stran:
 ##@bottle.get("/logout/")
+##def logout():
+##    """Pobriši cookie in preusmeri na login."""
+##    bottle.response.delete_cookie('uporabnisko_ime')
+##    bottle.redirect('/login/')
 
 
-#@bottle.get("/register/")
+@bottle.get("/register/")
+def register_get():    #zakaj je tuki pisal login get?
+    """Prikaži formo za registracijo."""
+    return bottle.template("register.html", 
+                           uporabnisko_ime=None,
+                           ime=None,
+                           priimek=None,
+                           napaka=None)
 
 
-#@bottle.post("/register/")
-
-
-#@bottle.route("/user/<username>/")
-
-    
-#@bottle.post("/user/<username>/")
-
-
+@bottle.post("/register/")
+def register_post():
+    """Registriraj novega uporabnika."""
+    #naslov="Null"  #za primer če ne vnese naslova
+    uporabnisko_ime = bottle.request.forms.uporabnisko_ime
+    ime = bottle.request.forms.ime
+    priimek = bottle.request.forms.priimek
+    naslov = bottle.request.forms.naslov
+    email = bottle.request.forms.email
+    tel_st = bottle.request.forms.tel_st
+    geslo1 = bottle.request.forms.geslo1
+    geslo2 = bottle.request.forms.geslo2
+    print(ime,priimek)
+    # Ali uporabnik že obstaja?
+    cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur.execute("SELECT 1 FROM oseba WHERE uporabnisko_ime=%s", [uporabnisko_ime])
+    if cur.fetchone():
+        # Če dobimo takega userja: uporabnik že obstaja; pri nas nas zanima samo username, za ime nam je vseeno (nas ne briga, če bi se isti človek prijavil 2x
+        # pri 2 različnih rezervacijah
+        return bottle.template("register.html",
+                               uporabnisko_ime=uporabnisko_ime,
+                               ime=ime,
+                               priimek=priimek,
+                               email=email,
+                               tel_st=tel_st,
+                               geslo1=geslo1,
+                               geslo2=geslo2,
+                               napaka='To uporabniško ime je že zasedeno.')
+    elif not geslo1 == geslo2:
+        # Gesli se ne ujemata, vrnemo vse prejšnje noter, da ni treba še enkrat pisat
+        return bottle.template("register.html",
+                               uporabnisko_ime=uporabnisko_ime,
+                               ime=ime,
+                               priimek=priimek,
+                               email=email,
+                               tel_st=tel_st,
+                               napaka='Gesli se ne ujemata.')
+    else:
+        # Vse je v redu, vstavi novega uporabnika v bazo
+        print("Vnesli vas bomo v bazo.")
+        geslo = password_md5(geslo1)
+        cur.execute("INSERT INTO oseba (ime, priimek, naslov, email, tel_st, uporabnisko_ime, geslo,oid) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                  (ime, priimek, naslov, email, tel_st, uporabnisko_ime, geslo,26))
+        # Daj uporabniku cookie, zato da ga direktno logina
+        print("Vnesli smo vas v bazo.")
+        bottle.response.set_cookie('uporabnisko_ime', uporabnisko_ime, path='/', secret=secret)
+        bottle.redirect("/")
+        
 
 
 ######################################################################
 # Glavni program
 
-### priklopimo se na bazo postgresql; vnesi svoje up.ime in geslo:
-conn = psycopg2.connect(database='seminarska_matejav', host='audrey.fmf.uni-lj.si', user='matejav', password='onceuponatime')
-conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT) # onemogocimo transakcije
-cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-
 # poženemo strežnik na portu 8080, glej http://localhost:8080/
 bottle.run(host='localhost', port=8080)
+
+#COMMITAMO IN ZAPREMO CURSOR IN BAZO
+##baza.commit()
+##cur.close()
+##baza.close()   

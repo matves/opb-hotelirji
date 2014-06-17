@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
-    <!--link rel="shortcut icon" href="/static/favicon.ico"-->
-
-    <title>Prijava</title>
+    <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
+    
+	<title>Prijava</title>
 
     <!-- Bootstrap core CSS -->
     <link href="/static/css/bootstrap.min.css" rel="stylesheet">
@@ -40,7 +40,7 @@
                 <div class="alert alert-warning">{{napaka}}</div>
                 %end
                 <div class="panel-body">
-                    <form class="form-horizontal" role="form">
+                    <form class="form-horizontal" role="form" method="post" action=".">
                     <div class="form-group">
                         <div class="col-sm-9">
                             <input class="form-control" placeholder="Uporabniško ime" type="text"

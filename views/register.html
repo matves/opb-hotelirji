@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="shortcut icon" href="/static/favicon.ico">
+    <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
 
     <title>Registracija</title>
 
@@ -40,7 +40,7 @@
                 <div class="alert alert-warning">{{napaka}}</div>
                 %end
                 <div class="panel-body">
-                    <form class="form-horizontal" role="form">
+                    <form class="form-horizontal" role="form" method="post" action=".">
                     <div class="form-group">
                         <div class="col-sm-9">
                             <input class="form-control" placeholder="Uporabniško ime" type="text"
@@ -73,7 +73,7 @@
                     </div>
 					<div class="form-group">
                         <div class="col-sm-9">
-                            <input class="form-control" name="telefonska_stevilka" placeholder="Telefonska številka" required="" type="tel">
+                            <input class="form-control" name="tel_st" placeholder="Telefonska številka" required="" type="tel">
                         </div>
                     </div>
 					 <div class="form-group">

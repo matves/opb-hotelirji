@@ -3,10 +3,10 @@ CREATE TABLE IF NOT EXISTS oseba (
 	ime	TEXT NOT NULL,
 	priimek	TEXT NOT NULL,
 	naslov	TEXT,
-	email	TEXT,
+	email	TEXT NOT NULL,
 	tel_st	TEXT NOT NULL,
-	uporabnisko_ime TEXT UNIQUE,
-	geslo TEXT
+	uporabnisko_ime TEXT NOT NULL UNIQUE,
+	geslo TEXT NOT NULL
 );
 
 

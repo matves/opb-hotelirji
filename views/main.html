@@ -1,10 +1,5 @@
 %rebase ('base.html', title='Hotel Prestige')
 
-%if sporocilo:
-  <div class="alert {{sporocilo[0]}} alert-dismissable">{{sporocilo[1]}}
-    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-  </div>
-%end
 
 <style type="text/css">
 #wrap {
@@ -28,7 +23,7 @@
 <fieldset>
 
 <!-- Form Name -->
-<legend>Kva dogaja?</legend>
+<legend>To dela Tilen</legend>
 
 <!-- Textarea -->
 <div class="control-group">
@@ -52,9 +47,20 @@
  </div>
 
  <div id="right_col">
+ <legend>Moje rezervacije</legend>
  
-%for (tid,avtor,avtor_ime,cas,vsebina,komentarji) in traci:
-%include ('trac.html', tid=tid, avtor=avtor, avtor_ime=avtor_ime, cas=cas, vsebina=vsebina, komentarji=komentarji)
+ <table style="width:300px">
+<tr>
+  <th>Številka sobe</th>
+  <th>Dan prihoda</th>
+  <th>Dan odhoda</th>
+</tr>
+ 
+%for (soba,zacetek,konec) in termin:
+%include ('termin.html', soba=soba,zacetek=zacetek,konec=konec)
 %end
+</table> 
+
+
 </div>
 </div>

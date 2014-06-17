@@ -187,8 +187,8 @@ def register_post():
         # Vse je v redu, vstavi novega uporabnika v bazo
         print("Vnesli vas bomo v bazo.")
         geslo = password_md5(geslo1)
-        cur.execute("INSERT INTO oseba (ime, priimek, naslov, email, tel_st, uporabnisko_ime, geslo,oid) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-                  (ime, priimek, naslov, email, tel_st, uporabnisko_ime, geslo,26))
+        cur.execute("INSERT INTO oseba (ime, priimek, naslov, email, tel_st, uporabnisko_ime, geslo) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                  (ime, priimek, naslov, email, tel_st, uporabnisko_ime, geslo))
         # Daj uporabniku cookie, zato da ga direktno logina
         print("Vnesli smo vas v bazo.")
         bottle.response.set_cookie('uporabnisko_ime', uporabnisko_ime, path='/', secret=secret)

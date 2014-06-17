@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
-    <!--link rel="shortcut icon" href="/static/favicon.ico"-->
+    <link rel="shortcut icon" href="/static/favicon.ico">
 
-    <title>Prijava</title>
+    <title>Registracija</title>
 
     <!-- Bootstrap core CSS -->
     <link href="/static/css/bootstrap.min.css" rel="stylesheet">
@@ -34,7 +34,7 @@
         <div class="col-md-4 col-md-offset-7">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                  <strong>Prijava</strong>
+                  <strong>Registracija novega uporabnika</strong>
                 </div>
 				%if napaka:
                 <div class="alert alert-warning">{{napaka}}</div>
@@ -51,29 +51,54 @@
                             required="" autofocus> 
                         </div>
                     </div>
-                    <div class="form-group">
+					<div class="form-group">
                         <div class="col-sm-9">
-                            <input class="form-control" name="geslo" placeholder="Geslo" required="" type="password">
+                            <input class="form-control" name="ime" required="" placeholder="Ime" type="text">
                         </div>
                     </div>
-					
+					<div class="form-group">
+                        <div class="col-sm-9">
+                            <input class="form-control" name="priimek" required="" placeholder="Priimek" type="text">
+                        </div>
+                    </div>
+					<div class="form-group">
+                        <div class="col-sm-9">
+                            <input class="form-control" name="naslov" placeholder="Naslov" type="text">
+                        </div>
+                    </div>
+					<div class="form-group">
+                        <div class="col-sm-9">
+                            <input class="form-control" name="email" placeholder="E-mail" required="" type="email">
+                        </div>
+                    </div>
+					<div class="form-group">
+                        <div class="col-sm-9">
+                            <input class="form-control" name="telefonska_stevilka" placeholder="Telefonska številka" required="" type="tel">
+                        </div>
+                    </div>
+					 <div class="form-group">
+                        <div class="col-sm-9">
+                            <input class="form-control" name="geslo1" placeholder="Izberite geslo" required="" type="password">
+                        </div>
+                    </div>
+					<div class="form-group">
+                        <div class="col-sm-9">
+                            <input class="form-control" name="geslo2" placeholder="Ponovite geslo" required="" type="password">
+                        </div>
+                    </div>
                     <div class="form-group last">
                         <div class="col-sm-offset-3 col-sm-9">
                             <button type="submit" class="btn btn-success btn-sm">
-                                Vstopi</button>
+                                Registriraj se</button>
                                  <!--button type="reset" class="btn btn-default btn-sm">
                                 Reset</button-->
                         </div>
                     </div>
                     </form>
                 </div>
-                <div class="panel-footer">
-                    <a href="/register/">Registracija</a></div>
-            </div>
         </div>
     </div>
 </div>
-
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->

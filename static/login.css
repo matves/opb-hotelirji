@@ -1,7 +1,9 @@
 /* CSS used here will be applied after bootstrap.css */
+/*Povzeto po http://www.bootply.com/IXBH7eHB4k*/
 
 body { 
- background: url('ozadje.jpg') no-repeat center center fixed; 
+  background: url(ozadje.jpg) no-repeat center center fixed; 
+ /* background:url(http://technomarketer.typepad.com/technomarketer//Radiohead_wallpaper.jpg) no-repeat center center fixed; /*background image*/
  -webkit-background-size: cover;
  -moz-background-size: cover;
  -o-background-size: cover;
@@ -15,3 +17,5 @@ body {
 .form-group.last {
  margin-bottom:0px;
 }
+
+

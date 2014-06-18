@@ -1,0 +1,94 @@
+%rebase ('base.html', title='Hotel Prestige')
+
+%if sporocilo:
+  <div class="alert {{sporocilo[0]}} alert-dismissable">{{sporocilo[1]}}
+    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+  </div>
+%end
+
+<style type="text/css">
+#wrap {
+   width:1200px;
+   margin:10 auto;
+}
+#left_col {
+   float:left;
+   width:400px;
+}
+#right_col {
+   float:right;
+   width:400px;
+}
+</style>
+
+<div id="wrap">
+    <div id="left_col">
+
+<form id="trac-forma" class="form-horizontal" method="post" type="submit" action="/trac/new/">
+<fieldset>
+
+<!-- Form Name -->
+<legend>Izberite: </legend>
+
+<!-- Buttons -->
+
+<div class="control-group">
+
+  <label class="control-label" for="singlebutton"></label>
+  <div class="controls">
+	  <font color="Black" size="1">Tip sobe&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	  &nbsp;&nbsp;&nbsp;&nbsp;Število postelj</font><br>
+    <select id="f">
+		<option value="Standard" selected="">Standard</option>
+		<option value="Nadstandard pogled na park">Nadstandard pogled na park</option>
+		<option value="Nadstandard pogled na morje">Nadstandard pogled na morje</option>
+		<option value="Deluxe pogled na park">Deluxe pogled na park</option>
+		<option value="Deluxe pogled na morje">Deluxe pogled na morje</option>
+	</select>
+	<select id="f">
+		<option value="2-posteljna" selected="">2</option>
+		<option value="4-posteljna">4</option>
+	</select>
+  </div>
+  
+<!-- Date -->
+<form id="searchform" action="" method="get" enctype="multipart/form-data" style="margin-left:15px; margin-right:15px;  ">
+
+<font color="Black" size="1">Datum prihoda &nbsp;&nbsp;Datum odhoda</font><br>
+	<input id="datepicker" type="text" name="dat" style="width:90px; background:#f0f2f1; border-radius: 4px 4px 4px 4px;" class="datepicker hasDatepicker" value="datum:" onchange="submit()">
+	<input id="datepicker" type="text" name="dat" style="width:90px; background:#f0f2f1; border-radius: 4px 4px 4px 4px;" class="datepicker hasDatepicker" value="datum:" onchange="submit()">
+
+<!-- Textarea -->
+<legend, font-size=15 >Cena: </legend>
+<div class="control-group">
+  <label class="control-label" for="trac"></label>
+  <div class="controls">                     
+    <textarea id="trac" name="trac"></textarea>
+  </div>
+</div>
+
+<div class="control-group">
+  <label class="control-label" for="singlebutton"></label>
+  <div class="controls">
+    <button id="singlebutton" name="singlebutton" class="btn btn-primary">Rezervirajte</button>
+  </div>
+</div>
+
+<form action="http://google.com">
+    <input type="submit" value="Go to Google">
+</form>
+
+
+</fieldset>
+</form>
+
+ </div>
+
+ <div id="right_col">
+ 
+%for (tid,avtor,avtor_ime,cas,vsebina,komentarji) in traci:
+%include ('trac.html', tid=tid, avtor=avtor, avtor_ime=avtor_ime, cas=cas, vsebina=vsebina, komentarji=komentarji)
+%end
+</div>
+</div>

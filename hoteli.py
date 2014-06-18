@@ -82,6 +82,7 @@ FROM termin
 ######################################################################
 #### Funkcije, ki obdelajo zahteve odjemalcev.
 
+@bottle.route("/static/<filename:path>")
 def static(filename):
     """Splošna funkcija, ki servira vse statične datoteke iz naslova
        /static/..."""

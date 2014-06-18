@@ -8,24 +8,74 @@
 }
 #left_col {
    float:left;
-   width:300px;
+   width:400px;
 }
 #right_col {
    float:right;
-   width:800px;
+   width:400px;
 }
 </style>
 
 <div id="wrap">
-    <div id="left_col">
 
-<form id="trac-forma" class="form-horizontal" method="post" action="/trac/new/">
+<!--=====================================Leva stran dokumenta========================================================================-->
+<div id="left_col">
+<div id="left_col">
+<form id="trac-forma" class="form-horizontal" method="post" type="submit" action="/trac/new/">
 <fieldset>
 
 <!-- Form Name -->
-<legend>To dela Tilen</legend>
+<legend>Izberite: </legend>
+
+<!-- Buttons -->
+
+<div class="control-group">
+
+  <label class="control-label" for="singlebutton"></label>
+  <div class="controls">
+	  <font color="Black" size="1">Tip sobe&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	  &nbsp;&nbsp;&nbsp;&nbsp;Število postelj</font><br>
+    <select id="f">
+		<option value="Standard" selected="">Standard</option>
+		<option value="Nadstandard pogled na park">Nadstandard pogled na park</option>
+		<option value="Nadstandard pogled na morje">Nadstandard pogled na morje</option>
+		<option value="Deluxe pogled na park">Deluxe pogled na park</option>
+		<option value="Deluxe pogled na morje">Deluxe pogled na morje</option>
+	</select>
+	<select id="f">
+		<option value="2-posteljna" selected="">2</option>
+		<option value="4-posteljna">4</option>
+	</select>
+  </div>
+  
+<!-- Date -->
+<h4>Izberite datum: </h4>
+	
+	<div class="input-daterange input-group" id="datepicker">
+	
+    <input type="text" class="datepicker1" name="zacetek" />
+	
+    <span class="input-group-addon">do</span>
+	
+    <input type="text" class="datepicker2" name="konec" />
+	
+    </div>
+	
+	<!--script type='text/javascript'>
+	$('#sandbox-container .input-daterange').datepicker({
+    format: "dd/mm/yyyy",
+    weekStart: 1,
+    todayBtn: "linked",
+    language: "sl",
+    multidate: true,
+    multidateSeparator: "do",
+    todayHighlight: true
+    });
+	</script-->
 
 <!-- Textarea -->
+<legend, font-size=15 >Cena: </legend>
 <div class="control-group">
   <label class="control-label" for="trac"></label>
   <div class="controls">                     
@@ -33,21 +83,28 @@
   </div>
 </div>
 
-<!-- Button -->
 <div class="control-group">
   <label class="control-label" for="singlebutton"></label>
   <div class="controls">
-    <button id="singlebutton" name="singlebutton" class="btn btn-primary">Kulsko!</button>
+    <button id="singlebutton" name="singlebutton" class="btn btn-primary">Rezervirajte</button>
   </div>
 </div>
+
+<form action="http://google.com">
+    <input type="submit" value="Go to Google">
+</form>
+
 
 </fieldset>
 </form>
 
  </div>
 
+
+</div>
+
+ <!--=====================================Desna stran dokumenta========================================================================-->
  <div id="right_col">
- 
  <!-- ce je administrator vidi vse -->
  %if uporabnisko_ime == 'admin':
  <legend>Vse rezervacije</legend>

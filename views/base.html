@@ -21,8 +21,10 @@
     <link href="/static/css/bootstrap-theme.min.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="/static/fakebook.css" rel="stylesheet">
 
+	<link href="/static/fakebook.css" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="/static/css/datepicker.css">
+	
     <!-- Just for debugging purposes. Don't actually copy this line! -->
     <!--[if lt IE 9]><script src="/static/js/ie8-responsive-file-warning.js"></script><![endif]-->
 
@@ -73,6 +75,27 @@
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/bootstrap.js"></script>
+	<script src="/static/js/bootstrap-datepicker.js"></script>
+	
+	<!--Funkcija, ki naredi 2 koledarčka v mainu pod date-->
+	<script type='text/javascript'>
+    $(function(){
+      $('.datepicker1').datepicker({
+      format: 'dd-mm-yyyy',
+	  weekStart: 1
+    });
+    });
+    </script>
+	
+    <script type='text/javascript'>
+    $(function(){
+      $('.datepicker2').datepicker({
+      format: 'dd-mm-yyyy',
+	  weekStart: 1
+    });
+    });
+    </script>
+	
   </body>
 </html>

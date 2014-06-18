@@ -1,5 +1,5 @@
-CREATE TABLE IF NOT EXISTS oseba (
-	oid	INTEGER PRIMARY KEY AUTOINCREMENT,	
+CREATE TABLE oseba (
+	oid	SERIAL PRIMARY KEY,	
 	ime	TEXT NOT NULL,
 	priimek	TEXT NOT NULL,
 	naslov	TEXT,
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS oseba (
 );
 
 
-CREATE TABLE IF NOT EXISTS soba (
+CREATE TABLE soba (
 	sid		INTEGER PRIMARY KEY,
 	cena	INTEGER NOT NULL,
 	kapaciteta 	INTEGER NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS soba (
 );	
 
 
-CREATE TABLE IF NOT EXISTS termin (
+CREATE TABLE termin (
 soba	INTEGER NOT NULL
 	REFERENCES soba(sid)
 	ON UPDATE CASCADE
@@ -34,6 +34,4 @@ PRIMARY KEY (soba, zacetek, konec)
 
 CREATE VIEW rezervirane_sobe AS 
 SELECT sid, oseba, cena AS cena_teden_brez_popusta, kapaciteta, tip, zacetek, konec FROM soba JOIN termin ON soba.sid=termin.soba
-
-
 

@@ -1,5 +1,5 @@
 CREATE TABLE oseba (
-	oid	SERIAL PRIMARY KEY,
+	oid	SERIAL PRIMARY KEY,	
 	ime	TEXT NOT NULL,
 	priimek	TEXT NOT NULL,
 	naslov	TEXT,
@@ -34,6 +34,4 @@ PRIMARY KEY (soba, zacetek, konec)
 
 CREATE VIEW rezervirane_sobe AS 
 SELECT sid, oseba, cena AS cena_teden_brez_popusta, kapaciteta, tip, zacetek, konec FROM soba JOIN termin ON soba.sid=termin.soba
-
-
 

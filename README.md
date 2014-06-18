@@ -15,4 +15,4 @@ Projekt pri predmetu Osnove podatkovnih baz
 * `uvoz` -- program za uvoz podatkov v podatkovno bazo na strežniku
 
 ## Namestitev:
-Med odkomentiramo pravo in poženemo dokument `hoteli.py`.
+Med bazami odkomentiramo pravo in poženemo dokument `hoteli.py`.

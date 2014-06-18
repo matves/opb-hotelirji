@@ -12,7 +12,7 @@
 }
 #right_col {
    float:right;
-   width:400px;
+   width:700px;
 }
 </style>
 
@@ -21,7 +21,7 @@
 <!--=====================================Leva stran dokumenta========================================================================-->
 <div id="left_col">
 <div id="left_col">
-<form id="trac-forma" class="form-horizontal" method="post" type="submit" action="/trac/new/">
+<form id="trac-forma" class="form-horizontal" method="post" type="submit" action=".">
 <fieldset>
 
 <!-- Form Name -->
@@ -36,16 +36,16 @@
 	  <font color="Black" size="1">Tip sobe&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 	  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 	  &nbsp;&nbsp;&nbsp;&nbsp;Število postelj</font><br>
-    <select id="f">
-		<option value="Standard" selected="">Standard</option>
-		<option value="Nadstandard pogled na park">Nadstandard pogled na park</option>
-		<option value="Nadstandard pogled na morje">Nadstandard pogled na morje</option>
-		<option value="Deluxe pogled na park">Deluxe pogled na park</option>
-		<option value="Deluxe pogled na morje">Deluxe pogled na morje</option>
+    <select name="izbrana_soba">
+		<option value=" Standard" selected="">Standard</option>
+		<option value=" Nadstandard pogled na park">Nadstandard pogled na park</option>
+		<option value=" Nadstandard pogled na morje">Nadstandard pogled na morje</option>
+		<option value=" Deluxe pogled na park">Deluxe pogled na park</option>
+		<option value=" Deluxe pogled na morje">Deluxe pogled na morje</option>
 	</select>
-	<select id="f">
-		<option value="2-posteljna" selected="">2</option>
-		<option value="4-posteljna">4</option>
+	<select name="stevilo_postelj">
+		<option value="2" selected="">2</option>
+		<option value="4">4</option>
 	</select>
   </div>
   
@@ -62,26 +62,18 @@
 	
     </div>
 	
-	<!--script type='text/javascript'>
-	$('#sandbox-container .input-daterange').datepicker({
-    format: "dd/mm/yyyy",
-    weekStart: 1,
-    todayBtn: "linked",
-    language: "sl",
-    multidate: true,
-    multidateSeparator: "do",
-    todayHighlight: true
-    });
-	</script-->
-
 <!-- Textarea -->
-<legend, font-size=15 >Cena: </legend>
+<br>
+<form id="trac-forma" class="form-horizontal" method="post" type="submit" action=".">
 <div class="control-group">
-  <label class="control-label" for="trac"></label>
-  <div class="controls">                     
-    <textarea id="trac" name="trac"></textarea>
+  <label class="control-label" for="singlebutton"></label>
+  <div class="controls">
+    <button id="singlebutton" name="singlebutton" class="btn btn-primary">Informativni zračun</button>
   </div>
-</div>
+</div><br>
+<legend, font-size=15 value="{{cena}}" name="cena">Cena: {{cena}} &#8364</legend>
+
+
 
 <div class="control-group">
   <label class="control-label" for="singlebutton"></label>
@@ -89,6 +81,10 @@
     <button id="singlebutton" name="singlebutton" class="btn btn-primary">Rezervirajte</button>
   </div>
 </div>
+%if napaka:
+	<div class="alert alert-warning">{{napaka}}</div>
+%end
+
 
 <form action="http://google.com">
     <input type="submit" value="Go to Google">
@@ -97,11 +93,11 @@
 
 </fieldset>
 </form>
-
  </div>
 
 
 </div>
+
 
  <!--=====================================Desna stran dokumenta========================================================================-->
  <div id="right_col">

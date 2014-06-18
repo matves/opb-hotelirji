@@ -53,29 +53,29 @@ FROM termin
     return ((soba, zacetek, konec)
             for (soba, zacetek, konec) in termin)
 
-###### Funkcija, ki preveri, kdo je prijavljen uporabnik in ga ustrezno usmeri
-##def get_user(auto_login = True):
-##    """Poglej cookie in ugotovi, kdo je prijavljeni uporabnik,
-##       vrni njegov username in ime. Če ni prijavljen, preusmeri
-##       na stran za prijavo ali vrni None (odvisno od auto_login).
-##    """
-##    # Dobimo username iz piškotka
-##    uporabnisko_ime = bottle.request.get_cookie('uporabnisko_ime', secret=secret)
-##    # Preverimo, ali ta uporabnik obstaja
-##    if uporabnisko_ime is not None:
-##        cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
-##        cur.execute("SELECT uporabnisko_ime, ime, priimek FROM oseba WHERE uporabnisko_ime=%s",
-##                  [uporabnisko_ime])
-##        r = cur.fetchone()
-##        cur.close ()
-##        if r is not None:
-##            # uporabnik obstaja, vrnemo njegove podatke
-##            return r
-##    # Če pridemo do sem, uporabnik ni prijavljen, naredimo redirect
-##    if auto_login:
-##        bottle.redirect('/login/')
-##    else:
-##        return None
+#### Funkcija, ki preveri, kdo je prijavljen uporabnik in ga ustrezno usmeri
+def get_user(auto_login = True):
+    """Poglej cookie in ugotovi, kdo je prijavljeni uporabnik,
+       vrni njegov username in ime. Če ni prijavljen, preusmeri
+       na stran za prijavo ali vrni None (odvisno od auto_login).
+    """
+    # Dobimo username iz piškotka
+    uporabnisko_ime = bottle.request.get_cookie('uporabnisko_ime', secret=secret)
+    # Preverimo, ali ta uporabnik obstaja
+    if uporabnisko_ime is not None:
+        cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        cur.execute("SELECT uporabnisko_ime, ime, priimek FROM oseba WHERE uporabnisko_ime=%s",
+                  [uporabnisko_ime])
+        r = cur.fetchone()
+        cur.close ()
+        if r is not None:
+            # uporabnik obstaja, vrnemo njegove podatke
+            return r
+    # Če pridemo do sem, uporabnik ni prijavljen, naredimo redirect
+    if auto_login:
+        bottle.redirect('/login/')
+    else:
+        return None
 
 
 
@@ -92,9 +92,13 @@ def static(filename):
 @bottle.route("/")
 def main():
     """Glavna stran."""
+    # Iz cookieja dobimo uporabnika (ali ga preusmerimo na login, če
+    # nima cookija)
+    (uporabnisko_ime, ime, oid) = get_user()
     #Seznam vseh sob v bazi
     termin = rezervacija()
     return bottle.template("main.html",
+                           oid=oid,
                            termin=termin)
 
 ## ko pridemo prvic gor, nam samo odpre login:
@@ -135,12 +139,12 @@ def login_post():
         bottle.redirect("/")
         ##pošljemo ga na glavno stran in če bo rpavilno delovala, bo vidla njegov cookie
 
-#### to bo implementirano v glavno stran:
-##@bottle.get("/logout/")
-##def logout():
-##    """Pobriši cookie in preusmeri na login."""
-##    bottle.response.delete_cookie('uporabnisko_ime')
-##    bottle.redirect('/login/')
+## to bo implementirano v glavno stran:
+@bottle.get("/logout/")
+def logout():
+    """Pobriši cookie in preusmeri na login."""
+    bottle.response.delete_cookie('uporabnisko_ime')
+    bottle.redirect('/login/')
 
 
 @bottle.get("/register/")

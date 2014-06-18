@@ -8,6 +8,7 @@ psycopg2.extensions.register_type(psycopg2.extensions.UNICODE) # se znebimo prob
 
 ### priklopimo se na bazo postgresql; vnesi svoje up.ime in geslo:
 baza = psycopg2.connect(database='seminarska_matejav', host='audrey.fmf.uni-lj.si', user='matejav', password='onceuponatime')
+#baza = psycopg2.connect(database='seminarska_tadejd', host='audrey.fmf.uni-lj.si', user='tadejd', password='stormymonday')
 baza.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT) # onemogocimo transakcije
 cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)  #kurzor
 
@@ -37,7 +38,22 @@ def password_md5(s):
     h.update(s.encode('utf-8'))
     return h.hexdigest()
 
-###### Funkcija, ki preveri, kdo je prijavljen uporabnik: 
+def rezervacija():
+    """Vrne vse rezervacije, ki so trenutno na bazi---ta vpogled bo imel administrator. To je osnovna verzija, ki prikaže le številko sobe, ter začetek in konec rezervacije
+"""
+    c = baza.cursor()
+    c.execute(
+    """SELECT soba, zacetek, konec
+FROM termin
+""")
+    # Rezultat predelamo v nabor.
+    termin = tuple(c)
+    c.close()
+    # Vrnemo nabor, kot je opisano v dokumentaciji funkcije:
+    return ((soba, zacetek, konec)
+            for (soba, zacetek, konec) in termin)
+
+###### Funkcija, ki preveri, kdo je prijavljen uporabnik in ga ustrezno usmeri
 ##def get_user(auto_login = True):
 ##    """Poglej cookie in ugotovi, kdo je prijavljeni uporabnik,
 ##       vrni njegov username in ime. Če ni prijavljen, preusmeri
@@ -64,33 +80,23 @@ def password_md5(s):
 
 
 ######################################################################
-# Funkcije, ki obdelajo zahteve odjemalcev.
+#### Funkcije, ki obdelajo zahteve odjemalcev.
 
 def static(filename):
     """Splošna funkcija, ki servira vse statične datoteke iz naslova
        /static/..."""
     return bottle.static_file(filename, root=static_dir)
 
-  
+## glavna stran: kasneje bo dodana še funkcija get_user za redirectanje na login  
 @bottle.route("/")
 def main():
     """Glavna stran."""
-##    # Iz cookieja dobimo uporabnika (ali ga preusmerimo na login, če
-##    # nima cookija)
-##    (username, ime) = get_user()
-##    # Morebitno sporočilo za uporabnika
-##    sporocilo = get_sporocilo()
-##    # Seznam zadnjih 10 tračev
-##    ts = traci()
-##    # Vrnemo predlogo za glavno stran
-    return 'To je glavni dokument, trenutno je še prazen. Pojdi raje na <a href="/login/">ta naslov</a>.'
-##    return bottle.template("main.html",
-##                           ime=ime,
-##                           username=username,
-##                           traci=ts,
-##                           sporocilo=sporocilo)
+    #Seznam vseh sob v bazi
+    termin = rezervacija()
+    return bottle.template("main.html",
+                           termin=termin)
 
-# to je ko pridemo prvic:
+## ko pridemo prvic gor, nam samo odpre login:
 @bottle.get("/login/")  
 def login_get():
     """Serviraj formo za login."""
@@ -98,7 +104,7 @@ def login_get():
                            napaka=None,   #na zacetku ni username-a in ni napake
                            uporabnisko_ime=None)
 
-## to je ko začne vpisovat noter in preveriš, če je taprav
+## ko začne vpisovat noter in preveriš, če je uporabnik že vpisan
 @bottle.post("/login/")
 def login_post():
     """Obdelaj izpolnjeno formo za prijavo"""
@@ -200,6 +206,7 @@ def register_post():
 # Glavni program
 
 # poženemo strežnik na portu 8080, glej http://localhost:8080/
+# če naštimaš tuki reloader=True, pol ga noče zagnat v shellu (nevem, zakaj)
 bottle.run(host='localhost', port=8080)
 
 #COMMITAMO IN ZAPREMO CURSOR IN BAZO

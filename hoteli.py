@@ -208,7 +208,7 @@ def register_post():
 
 # poženemo strežnik na portu 8080, glej http://localhost:8080/
 # če naštimaš tuki reloader=True, pol ga noče zagnat v shellu (nevem, zakaj)
-bottle.run(host='localhost', port=8080)
+bottle.run(host='localhost', port=8080, reloader=True)
 
 #COMMITAMO IN ZAPREMO CURSOR IN BAZO
 ##baza.commit()

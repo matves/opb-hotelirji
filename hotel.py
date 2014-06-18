@@ -5,6 +5,7 @@ import hashlib # računanje MD5 kriptografski hash za gesla
 # from datetime import datetime  #to nevemo še če bomo rabili
 import psycopg2, psycopg2.extensions, psycopg2.extras
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE) # se znebimo problemov s sumniki
+from datetime import date
 
 
 ######################################################################
@@ -31,20 +32,34 @@ def password_md5(s):
     h.update(s.encode('utf-8'))
     return h.hexdigest()
 
-def rezervacija():
+def rezervacija_admin():
     """Vrne vse rezervacije, ki so trenutno na bazi---ta vpogled bo imel administrator. To je osnovna verzija, ki prikaže le številko sobe, ter začetek in konec rezervacije
     """
     c = baza.cursor()
     c.execute(
-    """SELECT soba, zacetek, konec
-       FROM termin
+    """SELECT ime, priimek, tel_st, soba, zacetek, konec
+       FROM oseba JOIN termin ON oseba.oid = termin.oseba
     """)
     # Rezultat predelamo v nabor.
     termin = tuple(c)
     c.close()
     # Vrnemo nabor, kot je opisano v dokumentaciji funkcije:
-    return ((soba, zacetek, konec)
-            for (soba, zacetek, konec) in termin)
+    return ((ime, priimek, tel_st, soba, zacetek, konec)
+            for (ime, priimek, tel_st, soba, zacetek, konec) in termin)
+
+def rezervacija(oid):
+    """Vrne rezervacije navadnega uporabnika. 
+    """
+    c = baza.cursor()
+    c.execute(
+    """SELECT sid, tip, kapaciteta, zacetek, konec, cena FROM soba JOIN termin ON termin.soba = soba.sid WHERE  termin.oseba = %s
+    """, [oid])
+    # Rezultat predelamo v nabor.
+    termin = tuple(c)
+    c.close()
+    # Vrnemo nabor, kot je opisano v dokumentaciji funkcije:
+    return ((sid, tip, kapaciteta, zacetek, konec, cena)
+            for (sid, tip, kapaciteta, zacetek, konec, cena) in termin)
 
 def get_user(auto_login = True):
     """Poglej cookie in ugotovi, kdo je prijavljeni uporabnik,
@@ -84,8 +99,12 @@ def main():
     # nima cookija)
     (uporabnisko_ime, ime, oid) = get_user()
     #Seznam vseh sob v bazi
-    termin = rezervacija()
+    if uporabnisko_ime == 'admin':
+        termin = rezervacija_admin()
+    else:
+        termin = rezervacija(oid)
     return bottle.template("main.html",
+                           uporabnisko_ime = uporabnisko_ime,
                            oid=oid,
                            termin=termin)
 
@@ -193,7 +212,14 @@ def register_post():
         bottle.response.set_cookie('uporabnisko_ime', uporabnisko_ime, path='/', secret=secret)
         bottle.redirect("/")
         
-
+@bottle.route("/<soba:int>/<zacetek:path>/<konec:path>/delete/")
+def rezervacija_delete(soba,zacetek,konec):
+    """Zbriši rezervacijo"""
+    c = baza.cursor()
+    #c.execute("DELETE FROM termin WHERE soba=%s", [soba])
+    c.execute("DELETE FROM termin WHERE soba=%s AND zacetek=%s AND konec=%s", [soba,zacetek,konec])
+    c.close ()
+    return bottle.redirect("/")
 
 ######################################################################
 # Glavni program

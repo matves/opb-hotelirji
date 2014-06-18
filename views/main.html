@@ -8,11 +8,11 @@
 }
 #left_col {
    float:left;
-   width:400px;
+   width:300px;
 }
 #right_col {
    float:right;
-   width:400px;
+   width:800px;
 }
 </style>
 
@@ -47,20 +47,50 @@
  </div>
 
  <div id="right_col">
- <legend>Moje rezervacije</legend>
  
- <table style="width:300px">
+ <!-- ce je administrator vidi vse -->
+ %if uporabnisko_ime == 'admin':
+ <legend>Vse rezervacije</legend>
+ <table style="width:800px">
 <tr>
+  <th>Ime</th>
+  <th>Priimek</th>
+  <th>Telefonska številka</th>
   <th>Številka sobe</th>
   <th>Dan prihoda</th>
   <th>Dan odhoda</th>
 </tr>
  
-%for (soba,zacetek,konec) in termin:
-%include ('termin.html', soba=soba,zacetek=zacetek,konec=konec)
+%for (ime, priimek, tel_st,soba,zacetek,konec) in termin:
+%include ('termin.html', ime=ime, priimek=priimek, tel_st=tel_st,soba=soba,zacetek=zacetek,konec=konec)
 %end
 </table> 
-
+ 
+<!-- navaden uporabnik vidi le svoje rezervacije -->
+%else:
+ <legend>Moje rezervacije</legend>
+ <table style="width:800px">
+<tr>
+  <th>Številka soba</th>
+  <th>Tip</th>
+  <th>Kapaciteta</th>
+  <th>Dan prihoda</th>
+  <th>Dan odhoda</th>
+  <th>Cena na noč</th>
+</tr>
+ 
+%for (ime, priimek, tel_st,soba,zacetek,konec) in termin:
+<tr>
+  <td>{{ime}}</td>
+  <td>{{priimek}}</td>
+  <td>{{tel_st}}</td>
+  <td>{{soba}}</td>
+  <td>{{zacetek}}</td>
+  <td>{{konec}}</td>
+</tr>
+%end
+</table> 
+%end 
 
 </div>
 </div>

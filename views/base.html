@@ -83,8 +83,10 @@
 	<script type='text/javascript'>
     $(function(){
       $('.datepicker1').datepicker({
-      format: 'dd-mm-yyyy',
-	  weekStart: 1
+      format: 'dd.mm.yyyy',
+	  weekStart: 1,
+	  minDate: 0,
+	  maxDate: "+12M"
     });
     });
     </script>
@@ -92,11 +94,12 @@
     <script type='text/javascript'>
     $(function(){
       $('.datepicker2').datepicker({
-      format: 'dd-mm-yyyy',
-	  weekStart: 1
+      format: 'dd.mm.yyyy',
+	  weekStart: 1,
+	  minDate: 0,
+	  maxDate: "+12M"
     });
     });
     </script>
-	
   </body>
 </html>

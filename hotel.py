@@ -2,7 +2,7 @@
 
 import bottle
 import hashlib # računanje MD5 kriptografski hash za gesla
-# from datetime import datetime  #to nevemo še če bomo rabili
+from datetime import date, timedelta, datetime
 import psycopg2, psycopg2.extensions, psycopg2.extras
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE) # se znebimo problemov s sumniki
 from datetime import date
@@ -221,71 +221,113 @@ def register_post():
 
 
 
+
 #=======================================REZERVACIJA==========================================
 @bottle.post("/")  
 def nova_rezervacija():
-	"""Zabelezi novo rezervacijo."""
-	(uporabnisko_ime, ime, oid) = get_user()
-	soba_tip = bottle.request.forms.izbrana_soba
-	kapaciteta = bottle.request.forms.stevilo_postelj
+    """Zabelezi novo rezervacijo."""
+    (uporabnisko_ime, ime, oid) = get_user()
+    soba_tip = bottle.request.forms.izbrana_soba
+    kapaciteta = bottle.request.forms.stevilo_postelj
 	#FUNKCIJA, KI IZ PREDPISANEGA FORMATA RAZBERE DATUM:
-	zacetek=datetime.strptime(bottle.request.forms.zacetek,'%d.%m.%Y').date()
-	konec=datetime.strptime(bottle.request.forms.konec,'%d.%m.%Y').date()
+    zacetek=datetime.strptime(bottle.request.forms.zacetek,'%d.%m.%Y').date()
+    konec=datetime.strptime(bottle.request.forms.konec,'%d.%m.%Y').date()
+    #še enkrat prikaz leve strani
+    if uporabnisko_ime == 'admin':
+        termin = rezervacija_admin()
+    else:
+        termin = rezervacija(oid)
+    
+    print (soba_tip, kapaciteta, zacetek, konec)
 
-	if (zacetek < datetime.today().date() or konec <= zacetek):
-            napaka = "Prosimo, vnesite veljaven datum."
+    if (zacetek < datetime.today().date() or konec <= zacetek):
+        return bottle.template("main.html",
+                                uporabnisko_ime = uporabnisko_ime, 
+				oid=oid,
+				soba_tip=soba_tip,
+				kapaciteta=kapaciteta,
+				zacetek=zacetek,
+				konec=konec,
+                                termin=termin,
+				napaka="Prosimo, vnesite veljaven datum.",
+                                cena=None)
+    else:
+        """Pogledamo, koliko stane izbrani tip sobe"""
+        cur = baza.cursor()
+        cur.execute("SELECT cena FROM soba WHERE tip=%s AND kapaciteta=%s", [str(soba_tip),kapaciteta])
+        postavka_soba=float(tuple(cur)[0][0])
+        cena = informativni_izracun(zacetek, konec, postavka_soba)
+        print(cena)   
+
+	# On pritisne informativni izračun, če je soba frej, izpiše informativno ceno, če ne mu napiše, da ni frej.
+
+        cur.execute("""SELECT sid FROM soba LEFT JOIN termin ON soba.sid=termin.soba WHERE soba.tip=%s AND soba.kapaciteta=%s AND(termin.zacetek IS NULL OR                 SELECT (DATE %s - to_date(to_char(termin.konec, 'YYYY-MM-DD'), 'YYYY-MM-DD'))>=0) OR 
+                    (SELECT (DATE %s - to_date(to_char(termin.zacetek, 'YYYY-MM-DD'), 'YYYY-MM-DD'))<=0)) AND sid NOT IN (SELECT sid FROM soba LEFT JOIN termin ON soba.sid=termin.soba WHERE soba.tip=%s AND soba.kapaciteta=%s AND 
+                     (DATE %s < to_date(to_char(termin.konec, 'YYYY-MM-DD'), 'YYYY-MM-DD')) AND (DATE %s > to_date(to_char(termin.zacetek, 'YYYY-MM-DD'), 'YYYY-MM-DD')))""",
+                    [str(soba_tip),kapaciteta,str(zacetek.isoformat()),str(konec.isoformat()),str(soba_tip),kapaciteta,str(zacetek.isoformat()),str(konec.isoformat())])
+
+	## Če NE najde termina, mu izpišemo, da ni ok:
+        if cur.fetchone() is None:  
+                    return bottle.template("main.html",
+                                    uporabnisko_ime = uporabnisko_ime,
+				    oid=oid,
+				    soba_tip=soba_tip,
+				    kapaciteta=kapaciteta,
+				    termin=termin,
+				    zacetek=zacetek,
+				    konec=konec,
+                                    cena=None,
+				    napaka='Ta termin je žal zaseden, prosimo, izberite drugega.')
+
+        ## Če najde termin, je treba narest rezervacijo:  Najprej mu izpišemo info ceno, nato pa mora kliknt potrdi in se rezervacija vnese
+        ##Tukaj moramo narest še nekaj, kar bo aktiviralo gumb rezervacija
         else:
-	    cur = baza.cursor()
-	    cur.execute("SELECT cena FROM soba WHERE tip=%s AND kapaciteta=%s", [str(soba_tip),kapaciteta])
-	    postavka_soba=float(tuple(cur)[0][0])
-	    
-	    termin = rezervacija()
-	    # Ali je soba takrat ze zasedena?
-	    cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
-	
-	    # TLE JE TREBA POPRAVIT TA SELECT, DA NAJDE ČE JE PROST TERMIN V IZBRANEM TIPU SOBE
-	    # On pritisne informativni izračun, če je soba frej, izpiše informativno ceno, če ne mu napiše, da ni frej.
-	    cena = informativni_izracun(zacetek, konec, postavka_soba)
-	    
-	
-	    cur.execute("SELECT sid FROM soba WHERE NOT EXISTS (SELECT soba.sid FROM soba JOIN termin ON soba.sid=termin.soba WHERE soba.tip='Standard' AND soba.kapaciteta=2 AND (SELECT DATEDIFF(day,'2014-06-22',termin.konec)<=0) OR (SELECT DATEDIFF(DAY,'2014-06-27',termin.zacetek)<=0) AND soba.id=MIN)", [soba_tip,kapaciteta])
-	    if cur.fetchone():
-                # Pokažemo informativno ceno: to je treba dat v html
-                print(cena)
 
-                # Mu rečemo, naj potrdi
-                
-                # Če potrdi (klikne rezerviraj) vse je v redu, vstavimo nov termin bazo; če ne potrdi naj se vse izbriše in gre na začetno stran
-                # Mogoče bi tuki lahko dal dva gumba (da, ne) - da vsak sproži svoje
-                
-		print("Rezervacija uspešno opravljena.")
-		cur.execute("INSERT INTO termin (soba, zacetek, konec, oid) VALUES (%s, %s, %s, %s)",
-				  (soba, zacetek, konec, oid))
-		bottle.redirect("/")
-		
-	    else:
-		# Če je termin že zaseden, mu vrne izpolnjen obrazec še enkrat.
-		napaka='Ta termin je že zaseden.'
-		return bottle.template("main.html",
-					oid=oid,
-					soba=soba,
-					kapaciteta=kapaciteta,
-					termin=termin,
-					zacetek=zacetek,
-					konec=konec,
-					napaka=napaka)
+            ###Tale del je treba še noter dat: 
+##          
+##	    cur.execute("INSERT INTO termin (soba, zacetek, konec, oid) VALUES (%s, %s, %s, %s)",
+##				  (soba, zacetek, konec, oid))
+##	    bottle.redirect("/")    ##Zdej a bo na konc redirecralo al bo samo izpisalo, to se bomo pol odločili
+
+            
+            print(cena)   ##samo za preizkus izpišemo
+            print("Rezervacija uspešno opravljena.")
+            return bottle.template("main.html",
+                                    uporabnisko_ime = uporabnisko_ime,
+				    oid=oid,
+                                    cena=cena,
+				    soba_tip=soba_tip,
+				    kapaciteta=kapaciteta,
+                                    termin=termin,
+				    zacetek=zacetek,
+				    konec=konec,
+				    napaka=None)
 
 
-#==============================Izračun cene (pomožna)===============================================
-
+#==============================Izračun cene===============================================
+#Še za en dan neki fali
 def informativni_izracun(zacetek, konec, postavka_soba):
-	"""Izračuna ceno, ki jo bo moral gost plačati, če najame sobo - glede na sobo in čas."""
-	cas_bivanja=(konec-zacetek).days
-        cena=postavka_soba*cas_bivanja
-        #predelujem tako, da bojo vikendi šteti
+    """Izračuna ceno, ki jo bo moral gost plačati, če najame sobo - glede na sobo in čas."""
+    cas_bivanja=(konec-zacetek).days
 
-	return cena
+    # Definiramo imena dni tako kot jih ima funkcija date.weekday(): Monday is 0 and Sunday is 6
+    (PON,TOR,SRE,CET,PET,SOB,NED) = range(7)
+    # Mi v resnici gledamo nočitve, zato je nedelja pod delovnimi in petek ni
+    delovni=(NED,PON,TOR,SRE,CET)
 
+    # Pogledamo, koliko je to tednov in koliko dni ostane 
+    tedni, doddnevi = divmod(cas_bivanja, 7)
+    stdelovni = (tedni + 1) * len(delovni)
+
+    # Odštejemo delovne dni, ki bi prišli v preostali teden (odštevamo od 8 zaradi funkcije range)
+    for d in range(1, 8 - doddnevi):
+        if (konec + timedelta(d)).weekday() in delovni:
+            stdelovni -= 1
+            
+    stvikend = cas_bivanja-stdelovni
+    print('delovni=',stdelovni,'vikend=',stvikend)
+    cena=postavka_soba*(stdelovni + stvikend*1.2)
+    return cena
 
 
 #============================Izbris rezervacije====================================================        
@@ -297,6 +339,7 @@ def rezervacija_delete(soba,zacetek,konec):
     c.execute("DELETE FROM termin WHERE soba=%s AND zacetek=%s AND konec=%s", [soba,zacetek,konec])
     c.close ()
     return bottle.redirect("/")
+
 
 ####################################################################################################
 # Glavni program

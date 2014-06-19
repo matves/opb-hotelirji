@@ -50,17 +50,16 @@
   </div>
   
 <!-- Date -->
-<h4>Izberite datum: </h4>
+<h5>Izberite datum: </h5>
 	
-	<div class="input-daterange input-group" id="datepicker">
-	
-    <input type="text" class="datepicker1" name="zacetek" />
-	
+<div class="input-daterange input-group" id="datepicker">
+    <input type="text" class="datepicker1" name="zacetek"  placeholder="dd.mm.yyyy" size="15" required=""/>
     <span class="input-group-addon">do</span>
-	
-    <input type="text" class="datepicker2" name="konec" />
-	
-    </div>
+    <input type="text" class="datepicker2" name="konec"  placeholder="dd.mm.yyyy" size="15" required=""/>
+</div>
+%if napaka: 
+	<div class="alert alert-warning">{{napaka}}</div>
+%end
 	
 <!-- Textarea -->
 <br>
@@ -68,22 +67,22 @@
 <div class="control-group">
   <label class="control-label" for="singlebutton"></label>
   <div class="controls">
-    <button id="singlebutton" name="singlebutton" class="btn btn-primary">Informativni zračun</button>
+    <button type="submit" id="singlebutton" name="singlebutton" class="btn btn-primary" >Informativni izračun</button>
   </div>
 </div><br>
-<legend, font-size=15 value="{{cena}}" name="cena">Cena: {{cena}} &#8364</legend>
-
+%if cena:
+<legend, font-size=15> Cena: {{cena}} &#8364</legend>
+%end
 
 
 <div class="control-group">
   <label class="control-label" for="singlebutton"></label>
   <div class="controls">
     <button id="singlebutton" name="singlebutton" class="btn btn-primary">Rezervirajte</button>
+    <button type="reset" class="btn btn-default btn-sm">Reset</button>
   </div>
 </div>
-%if napaka:
-	<div class="alert alert-warning">{{napaka}}</div>
-%end
+
 
 
 <form action="http://google.com">

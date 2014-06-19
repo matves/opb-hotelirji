@@ -2,15 +2,11 @@
 
 import bottle
 import hashlib # računanje MD5 kriptografski hash za gesla
-# from datetime import datetime  #to nevemo še če bomo rabili
+from datetime import datetime 
 import psycopg2, psycopg2.extensions, psycopg2.extras
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE) # se znebimo problemov s sumniki
+from datetime import date
 
-### priklopimo se na bazo postgresql; vnesi svoje up.ime in geslo:
-baza = psycopg2.connect(database='seminarska_matejav', host='audrey.fmf.uni-lj.si', user='matejav', password='onceuponatime')
-#baza = psycopg2.connect(database='seminarska_tadejd', host='audrey.fmf.uni-lj.si', user='tadejd', password='stormymonday')
-baza.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT) # onemogocimo transakcije
-cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)  #kurzor
 
 ######################################################################
 # Konfiguracija
@@ -22,14 +18,12 @@ bottle.debug(True)
 # Mapa s statičnimi datotekami
 static_dir = "./static"
 
-# Skrivnost za kodiranje cookijev; na zacetku secret=None
-# uporabnik ne ve, kaj je notri, ne more spreminjat, krast
-secret = "to skrivnost je zelo tezko uganiti 1094107c907cw982982c421"
+# Skrivnost za kodiranje cookijev
+secret = "to skrivnost je zelo tezko uganiti 1094107c907cw982982c42"
+
 
 ######################################################################
-# Pomožne funkcije: jih ne gledamo, dokler jih ne rabimo ;)
-
-##### Funkcija, ki v cookie spravi sporocilo: to ne vem če sploh rabmo
+#Pomožne funkcije
 
 def password_md5(s):
     """Vrni MD5 hash danega UTF-8 niza. Gesla vedno spravimo v bazo
@@ -38,38 +32,51 @@ def password_md5(s):
     h.update(s.encode('utf-8'))
     return h.hexdigest()
 
-def rezervacija():
-    """Vrne vse rezervacije, ki so trenutno na bazi---ta vpogled bo imel administrator. To je osnovna verzija, ki prikaže le številko sobe, ter začetek in konec rezervacije
-"""
+def rezervacija_admin():
+    """Vrne vse rezervacije, ki so trenutno na bazi---ta vpogled bo imel administrator.
+    To je osnovna verzija, ki prikaže le številko sobe, ter začetek in konec rezervacije.
+    """
     c = baza.cursor()
     c.execute(
-    """SELECT soba, zacetek, konec
-FROM termin
-""")
+    """SELECT ime, priimek, tel_st, soba, zacetek, konec
+       FROM oseba JOIN termin ON oseba.oid = termin.oseba
+    """)
     # Rezultat predelamo v nabor.
     termin = tuple(c)
     c.close()
     # Vrnemo nabor, kot je opisano v dokumentaciji funkcije:
-    return ((soba, zacetek, konec)
-            for (soba, zacetek, konec) in termin)
+    return ((ime, priimek, tel_st, soba, zacetek, konec)
+            for (ime, priimek, tel_st, soba, zacetek, konec) in termin)
 
-#### Funkcija, ki preveri, kdo je prijavljen uporabnik in ga ustrezno usmeri
+def rezervacija(oid):
+    """Vrne rezervacije navadnega uporabnika. 
+    """
+    c = baza.cursor()
+    c.execute(
+    """SELECT sid, tip, kapaciteta, zacetek, konec, cena FROM soba JOIN termin ON termin.soba = soba.sid WHERE  termin.oseba = %s
+    """, [oid])
+    # Rezultat predelamo v nabor.
+    termin = tuple(c)
+    c.close()
+    # Vrnemo nabor, kot je opisano v dokumentaciji funkcije:
+    return ((sid, tip, kapaciteta, zacetek, konec, cena)
+            for (sid, tip, kapaciteta, zacetek, konec, cena) in termin)
+
 def get_user(auto_login = True):
     """Poglej cookie in ugotovi, kdo je prijavljeni uporabnik,
-       vrni njegov username in ime. Če ni prijavljen, preusmeri
-       na stran za prijavo ali vrni None (odvisno od auto_login).
+       vrni njegov username in ime. Če ni prijavljen, presumeri
+       na stran za prijavo ali vrni None (advisno od auto_login).
     """
     # Dobimo username iz piškotka
     uporabnisko_ime = bottle.request.get_cookie('uporabnisko_ime', secret=secret)
     # Preverimo, ali ta uporabnik obstaja
     if uporabnisko_ime is not None:
-        cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        cur.execute("SELECT uporabnisko_ime, ime, priimek FROM oseba WHERE uporabnisko_ime=%s",
-                  [uporabnisko_ime])
-        r = cur.fetchone()
-        cur.close ()
+        c = baza.cursor()
+        c.execute("SELECT uporabnisko_ime, ime, oid FROM oseba WHERE uporabnisko_ime = %s",[uporabnisko_ime])
+        r = c.fetchone()
+        c.close ()
         if r is not None:
-            # uporabnik obstaja, vrnemo njegove podatke
+            # uporabnik obstaja, vrnemo njegove podatke (uporabniško ime, ime, oid)
             return r
     # Če pridemo do sem, uporabnik ni prijavljen, naredimo redirect
     if auto_login:
@@ -77,10 +84,8 @@ def get_user(auto_login = True):
     else:
         return None
 
-
-
-######################################################################
-#### Funkcije, ki obdelajo zahteve odjemalcev.
+##########################################################################################################
+# Funkcije, ki obdelajo zahteve odjemalcev.
 
 @bottle.route("/static/<filename:path>")
 def static(filename):
@@ -88,20 +93,27 @@ def static(filename):
        /static/..."""
     return bottle.static_file(filename, root=static_dir)
 
-## glavna stran: kasneje bo dodana še funkcija get_user za redirectanje na login  
+#####================Glavna stran (odprtje, cookie-ji)=================================
 @bottle.route("/")
 def main():
     """Glavna stran."""
-    # Iz cookieja dobimo uporabnika (ali ga preusmerimo na login, če
-    # nima cookija)
+    # Iz cookieja dobimo uporabnika (ali ga preusmerimo na login, če nima cookija)
     (uporabnisko_ime, ime, oid) = get_user()
-    #Seznam vseh sob v bazi
-    termin = rezervacija()
+    # Odvisno od uporabnika se kliče funkcija, ki vrne ustrezno tabelo in jo vstavi na mesto v mainu.
+    if uporabnisko_ime == 'admin':
+        termin = rezervacija_admin()
+    else:
+        termin = rezervacija(oid)
     return bottle.template("main.html",
+                           uporabnisko_ime = uporabnisko_ime,
                            oid=oid,
-                           termin=termin)
+                           termin=termin,
+                           napaka=None,
+			   cena=None,
+			   zacetek=None,
+			   konec=None)
 
-## ko pridemo prvic gor, nam samo odpre login:
+##==================================LOGIN, LOGOUT==============================================
 @bottle.get("/login/")  
 def login_get():
     """Serviraj formo za login."""
@@ -139,7 +151,7 @@ def login_post():
         bottle.redirect("/")
         ##pošljemo ga na glavno stran in če bo rpavilno delovala, bo vidla njegov cookie
 
-## to bo implementirano v glavno stran:
+#### to bo implementirano v glavno stran:
 @bottle.get("/logout/")
 def logout():
     """Pobriši cookie in preusmeri na login."""
@@ -157,6 +169,7 @@ def register_get():    #zakaj je tuki pisal login get?
                            napaka=None)
 
 
+#==============================REGISTER===============================================================
 @bottle.post("/register/")
 def register_post():
     """Registriraj novega uporabnika."""
@@ -174,8 +187,8 @@ def register_post():
     cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cur.execute("SELECT 1 FROM oseba WHERE uporabnisko_ime=%s", [uporabnisko_ime])
     if cur.fetchone():
-        # Če dobimo takega userja: uporabnik že obstaja; pri nas nas zanima samo username, za ime nam je vseeno (nas ne briga, če bi se isti človek prijavil 2x
-        # pri 2 različnih rezervacijah
+        # Če dobimo takega userja: uporabnik že obstaja; pri nas nas zanima samo username,
+        #za ime nam je vseeno (nas ne briga, če bi se isti človek prijavil 2x pri 2 različnih rezervacijah
         return bottle.template("register.html",
                                uporabnisko_ime=uporabnisko_ime,
                                ime=ime,
@@ -204,17 +217,121 @@ def register_post():
         print("Vnesli smo vas v bazo.")
         bottle.response.set_cookie('uporabnisko_ime', uporabnisko_ime, path='/', secret=secret)
         bottle.redirect("/")
-        
 
 
-######################################################################
+#=======================================REZERVACIJA==========================================
+@bottle.post("/")  
+def nova_rezervacija():
+    """Zabelezi novo rezervacijo."""
+    (uporabnisko_ime, ime, oid) = get_user()
+    soba_tip = bottle.request.forms.izbrana_soba
+    kapaciteta = bottle.request.forms.stevilo_postelj
+	#FUNKCIJA, KI IZ PREDPISANEGA FORMATA RAZBERE DATUM:
+    zacetek=datetime.strptime(bottle.request.forms.zacetek,'%d.%m.%Y').date()
+    konec=datetime.strptime(bottle.request.forms.konec,'%d.%m.%Y').date()
+    #še enkrat prikaz leve strani
+    if uporabnisko_ime == 'admin':
+        termin = rezervacija_admin()
+    else:
+        termin = rezervacija(oid)
+    
+    print (soba_tip, kapaciteta,zacetek, konec)
+
+    if (zacetek < datetime.today().date() or konec <= zacetek):
+        return bottle.template("main.html",
+                                uporabnisko_ime = uporabnisko_ime, 
+				oid=oid,
+				soba_tip=soba_tip,
+				kapaciteta=kapaciteta,
+				zacetek=zacetek,
+				konec=konec,
+                                termin=termin,
+				napaka="Prosimo, vnesite veljaven datum.",
+                                cena=None)
+    else:
+        cur = baza.cursor()
+        cur.execute("SELECT cena FROM soba WHERE tip=%s AND kapaciteta=%s", [str(soba_tip),kapaciteta])
+        postavka_soba=float(tuple(cur)[0][0])
+	    
+##	
+##	# Ali je soba takrat ze zasedena?
+##	cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
+	
+	# TLE JE TREBA POPRAVIT TA SELECT, DA NAJDE ČE JE PROST TERMIN V IZBRANEM TIPU SOBE
+	# On pritisne informativni izračun, če je soba frej, izpiše informativno ceno, če ne mu napiše, da ni frej.
+        cena = informativni_izracun(zacetek, konec, postavka_soba)
+        return bottle.template("main.html",
+                                    uporabnisko_ime = uporabnisko_ime,
+				    oid=oid,
+                                    cena=cena,
+				    soba_tip=soba_tip,
+				    kapaciteta=kapaciteta,
+                                    termin=termin,
+				    zacetek=zacetek,
+				    konec=konec,
+				    napaka=None)
+	    
+	
+"""	cur.execute("SELECT sid FROM soba WHERE NOT EXISTS (SELECT soba.sid FROM soba JOIN termin ON soba.sid=termin.soba WHERE soba.tip='Standard' AND soba.kapaciteta=2 AND (SELECT DATEDIFF(day,'2014-06-22',termin.konec)<=0) OR (SELECT DATEDIFF(DAY,'2014-06-27',termin.zacetek)<=0) AND soba.id=MIN)", [soba_tip,kapaciteta])
+
+	if cur.fetchone():
+                # Pokažemo informativno ceno: to je treba dat v html
+            print(cena)
+
+                # Mu rečemo, naj potrdi
+                
+                # Če potrdi (klikne rezerviraj) vse je v redu, vstavimo nov termin bazo; če ne potrdi naj se vse izbriše in gre na začetno stran
+                # Mogoče bi tuki lahko dal dva gumba (da, ne) - da vsak sproži svoje
+                
+	    print("Rezervacija uspešno opravljena.")
+	    cur.execute("INSERT INTO termin (soba, zacetek, konec, oid) VALUES (%s, %s, %s, %s)",
+				  (soba, zacetek, konec, oid))
+	    bottle.redirect("/")
+		
+	else:
+		# Če je termin že zaseden, mu vrne izpolnjen obrazec še enkrat.
+	    napaka='Ta termin je že zaseden.'
+	    return bottle.template("main.html",
+				    oid=oid,
+				    soba=soba,
+				    kapaciteta=kapaciteta,
+				    termin=termin,
+				    zacetek=zacetek,
+				    konec=konec,
+				    napaka=napaka)"""
+
+
+#==============================Izračun cene===============================================
+
+def informativni_izracun(zacetek, konec, postavka_soba):
+    """Izračuna ceno, ki jo bo moral gost plačati, če najame sobo - glede na sobo in čas."""
+    cas_bivanja=(konec-zacetek).days
+    cena=postavka_soba*cas_bivanja
+    #predelujem tako, da bojo vikendi šteti
+
+    return cena
+
+
+#============================Izbris rezervacije====================================================        
+@bottle.route("/<soba:int>/<zacetek:path>/<konec:path>/delete/")
+def rezervacija_delete(soba,zacetek,konec):
+    """Zbriši rezervacijo"""
+    c = baza.cursor()
+    #c.execute("DELETE FROM termin WHERE soba=%s", [soba])
+    c.execute("DELETE FROM termin WHERE soba=%s AND zacetek=%s AND konec=%s", [soba,zacetek,konec])
+    c.close ()
+    return bottle.redirect("/")
+
+####################################################################################################
 # Glavni program
 
-# poženemo strežnik na portu 8080, glej http://localhost:8080/
-# če naštimaš tuki reloader=True, pol ga noče zagnat v shellu (nevem, zakaj)
-bottle.run(host='localhost', port=8080, reloader=True)
+# priklopimo se na bazo
+### priklopimo se na bazo postgresql; vnesi svoje up.ime in geslo:
+#baza = psycopg2.connect(database='seminarska_tadejd', host='audrey.fmf.uni-lj.si', user='tadejd', password='stormymonday')
+baza = psycopg2.connect(database='seminarska_matejav', host='audrey.fmf.uni-lj.si', user='matejav', password='onceuponatime')
+baza.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT) # onemogocimo transakcije
 
-#COMMITAMO IN ZAPREMO CURSOR IN BAZO
-##baza.commit()
-##cur.close()
-##baza.close()   
+# poženemo strežnik na portu 8080, glej http://localhost:8080/
+#bottle.run(host='localhost', port=8080, reloader=True)
+bottle.run(host='localhost', port=8080)
+

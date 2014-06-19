@@ -220,6 +220,7 @@ def register_post():
         bottle.redirect("/")
 
 
+
 #=======================================REZERVACIJA==========================================
 @bottle.post("/")  
 def nova_rezervacija():
@@ -234,8 +235,6 @@ def nova_rezervacija():
 	if (zacetek < datetime.today().date() or konec <= zacetek):
             napaka = "Prosimo, vnesite veljaven datum."
         else:
-            cas_bivanja=(konec-zacetek).days
-            cena=postavka_soba*cas_bivanja
 	    cur = baza.cursor()
 	    cur.execute("SELECT cena FROM soba WHERE tip=%s AND kapaciteta=%s", [str(soba_tip),kapaciteta])
 	    postavka_soba=float(tuple(cur)[0][0])
@@ -245,16 +244,27 @@ def nova_rezervacija():
 	    cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
 	
 	    # TLE JE TREBA POPRAVIT TA SELECT, DA NAJDE ČE JE PROST TERMIN V IZBRANEM TIPU SOBE
+	    # On pritisne informativni izračun, če je soba frej, izpiše informativno ceno, če ne mu napiše, da ni frej.
+	    cena = informativni_izracun(zacetek, konec, postavka_soba)
+	    
 	
 	    cur.execute("SELECT sid FROM soba WHERE NOT EXISTS (SELECT soba.sid FROM soba JOIN termin ON soba.sid=termin.soba WHERE soba.tip='Standard' AND soba.kapaciteta=2 AND (SELECT DATEDIFF(day,'2014-06-22',termin.konec)<=0) OR (SELECT DATEDIFF(DAY,'2014-06-27',termin.zacetek)<=0) AND soba.id=MIN)", [soba_tip,kapaciteta])
 	    if cur.fetchone():
-                # Vse je v redu, vstavimo nov termin bazo
+                # Pokažemo informativno ceno: to je treba dat v html
+                print(cena)
+
+                # Mu rečemo, naj potrdi
+                
+                # Če potrdi (klikne rezerviraj) vse je v redu, vstavimo nov termin bazo; če ne potrdi naj se vse izbriše in gre na začetno stran
+                # Mogoče bi tuki lahko dal dva gumba (da, ne) - da vsak sproži svoje
+                
 		print("Rezervacija uspešno opravljena.")
 		cur.execute("INSERT INTO termin (soba, zacetek, konec, oid) VALUES (%s, %s, %s, %s)",
 				  (soba, zacetek, konec, oid))
 		bottle.redirect("/")
+		
 	    else:
-		# Če je termin že zaseden
+		# Če je termin že zaseden, mu vrne izpolnjen obrazec še enkrat.
 		napaka='Ta termin je že zaseden.'
 		return bottle.template("main.html",
 					oid=oid,
@@ -266,36 +276,16 @@ def nova_rezervacija():
 					napaka=napaka)
 
 
-#==============================Izračun cene===============================================
-##Še nekaj, kar bo preračunalo vikende
-@bottle.post("/")
-def informativni_izracun():
-	"""Izračuna ceno, ki jo bo moral gost plačati, če najame sobo."""
-	termin = rezervacija()
-	soba_tip = bottle.request.forms.izbrana_soba
-	kapaciteta = bottle.request.forms.stevilo_postelj
-	#datum1=bottle.request.forms.zacetek
-	#datum2=bottle.request.forms.konec
-	#if datum1:
-		#zacetek = datetime.date(datum1)
-		#konec = datetime.date(datum2)
-		#cas_bivanja=(konec-zacetek).days
-	#else: cas_bivanja=0
-	zacetek = datetime.date(2014,6,18)
-	konec = datetime.date(2014,6,23)
+#==============================Izračun cene (pomožna)===============================================
+
+def informativni_izracun(zacetek, konec, postavka_soba):
+	"""Izračuna ceno, ki jo bo moral gost plačati, če najame sobo - glede na sobo in čas."""
 	cas_bivanja=(konec-zacetek).days
-	#cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
-	cur = baza.cursor()
-	cur.execute("SELECT cena FROM soba WHERE tip=%s AND kapaciteta=%s", [str(soba_tip),kapaciteta])
-	postavka_soba=float(tuple(cur)[0][0])
-	return bottle.template("main.html",
-				soba_tip=soba_tip,
-				kapaciteta=kapaciteta,
-				termin=termin,
-				zacetek=zacetek,
-				konec=konec,
-				cena=postavka_soba*cas_bivanja,
-				napaka=None)
+        cena=postavka_soba*cas_bivanja
+        #predelujem tako, da bojo vikendi šteti
+
+	return cena
+
 
 
 #============================Izbris rezervacije====================================================        

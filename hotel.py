@@ -2,7 +2,7 @@
 
 import bottle
 import hashlib # računanje MD5 kriptografski hash za gesla
-from datetime import date, timedelta, datetime
+# from datetime import datetime  #to nevemo še če bomo rabili
 import psycopg2, psycopg2.extensions, psycopg2.extras
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE) # se znebimo problemov s sumniki
 from datetime import date, datetime
@@ -143,7 +143,7 @@ def main():
                             cena=None,
                             zacetek=None,
                             konec=None,
-                            ratio=len(st_rez())/60.)
+                            ratio=round(len(st_rez())/60.,1))
     else:
         termin = rezervacija(oid)
         return bottle.template("main.html",
@@ -154,7 +154,7 @@ def main():
                             cena=None,
                             zacetek=None,
                             konec=None,
-                            ratio=len(st_rez())/60.)
+                            ratio=round(len(st_rez())/60.,1))
 ##==================================LOGIN, LOGOUT==============================================
 ## ko pridemo prvic gor, nam samo odpre login:
 @bottle.get("/login/")  
@@ -299,7 +299,7 @@ def nova_rezervacija():
                                     tel_st_gosta=None,
                                     ime_izpis=None,
                                     priimek_izpis=None,
-                                    ratio=len(st_rez())/60.)
+                                    ratio=round(len(st_rez())/60.,1))
                                    
         else:
             cur = baza.cursor()
@@ -328,7 +328,7 @@ def nova_rezervacija():
                                         tel_st_gosta=None,
                                         ime_izpis=None,
                                         priimek_izpis=None,
-                                        ratio=len(st_rez())/60.)
+                                        ratio=round(len(st_rez())/60.,1))
     else:
         cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cur.execute("SELECT 1 FROM termin JOIN oseba ON termin.oseba=oseba.oid WHERE ime = %s AND priimek = %s AND tel_st = %s", [ime_gosta, priimek_gosta, tel_st_gosta])
@@ -352,7 +352,7 @@ def nova_rezervacija():
                 konec=None,
                 soba_tip=None,
                 kapaciteta=None,
-                ratio=len(st_rez())/60.)
+                ratio=round(len(st_rez())/60.,1))
               #gremo na osnovno stran, in vse v okencih pobrišemo
         else:
             cur.execute("SELECT oid FROM oseba WHERE ime = %s AND priimek = %s AND tel_st = %s", [ime_gosta, priimek_gosta, tel_st_gosta])
@@ -373,32 +373,16 @@ def nova_rezervacija():
                 konec=None,
                 soba_tip=None,
                 kapaciteta=None,
-                ratio=len(st_rez())/60.)
+                ratio=round(len(st_rez())/60.,1))
 
 #==============================Izračun cene===============================================
 
 def informativni_izracun(zacetek, konec, postavka_soba):
     """Izračuna ceno, ki jo bo moral gost plačati, če najame sobo - glede na sobo in čas."""
     cas_bivanja=(konec-zacetek).days
+    cena=postavka_soba*cas_bivanja
+    #predelujem tako, da bojo vikendi šteti
 
-    # Definiramo imena dni tako kot jih ima funkcija date.weekday(): Monday is 0 and Sunday is 6
-    (PON,TOR,SRE,CET,PET,SOB,NED) = range(7)
-    # Mi v resnici gledamo nočitve, zato je nedelja pod delovnimi in petek ni
-    delovni=(NED,PON,TOR,SRE,CET)
-
-    # Pogledamo, koliko je to tednov in koliko dni ostane 
-    tedni, doddnevi = divmod(cas_bivanja, 7)
-    stdelovni = (tedni + 1) * len(delovni)
-
-    # Odštejemo delovne dni, ki bi prišli v preostali teden (odštevamo od 8 zaradi funkcije range)
-    # Konec-1 zato, ker se šteje zadnja nočitev
-    for d in range(1, 8 - doddnevi):
-        if (konec + timedelta(d - 1 )).weekday() in delovni:
-            stdelovni -= 1
-            
-    stvikend = cas_bivanja-stdelovni
-    print('delovni=',stdelovni,'vikend=',stvikend)
-    cena=postavka_soba*(stdelovni + stvikend*1.2)
     return cena
 
 
@@ -427,5 +411,5 @@ baza = psycopg2.connect(database='seminarska_tadejd', host='audrey.fmf.uni-lj.si
 baza.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT) # onemogocimo transakcije
 
 # poženemo strežnik na portu 8080, glej http://localhost:8080/
-bottle.run(host='localhost', port=8080)
+bottle.run(host='localhost', port=8080, reloader=True)
 

@@ -141,11 +141,11 @@
         <div class="col-md-7 col-md-offset-0">
 	<div class="row">                   
         <div class="progress">
-            <div class="progress-bar" role="progressbar" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="width: {{ratio}}%;">
-                <span class="sr-only">0% Complete</span>
+            <div class="progress-bar" role="progressbar" aria-valuenow="{{100*ratio}}" aria-valuemin="0" aria-valuemax="100" style="width: {{100*ratio}}%;">
+                <span class="sr-only">{{100*ratio}}% Complete</span>
             </div>
             
-            <span class="progress-completed">0%</span>
+            <span class="progress-completed">{{100*ratio}}%</span>
         </div>
 	</div>
 </div>

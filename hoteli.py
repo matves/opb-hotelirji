@@ -219,6 +219,7 @@ def register_post():
         bottle.redirect("/")
 
 
+
 #=======================================REZERVACIJA==========================================
 @bottle.post("/")  
 def nova_rezervacija():
@@ -249,18 +250,37 @@ def nova_rezervacija():
 				napaka="Prosimo, vnesite veljaven datum.",
                                 cena=None)
     else:
+        """Pogledamo, koliko stane izbrani tip sobe"""
         cur = baza.cursor()
         cur.execute("SELECT cena FROM soba WHERE tip=%s AND kapaciteta=%s", [str(soba_tip),kapaciteta])
         postavka_soba=float(tuple(cur)[0][0])
-	    
-##	
-##	# Ali je soba takrat ze zasedena?
-##	cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
-	
-	# TLE JE TREBA POPRAVIT TA SELECT, DA NAJDE ČE JE PROST TERMIN V IZBRANEM TIPU SOBE
-	# On pritisne informativni izračun, če je soba frej, izpiše informativno ceno, če ne mu napiše, da ni frej.
         cena = informativni_izracun(zacetek, konec, postavka_soba)
-        return bottle.template("main.html",
+	
+	# On pritisne informativni izračun, če je soba frej, izpiše informativno ceno, če ne mu napiše, da ni frej.
+
+        cur.execute("""SELECT sid FROM soba LEFT JOIN termin ON soba.sid=termin.soba WHERE soba.tip=%s AND soba.kapaciteta=%s AND(termin.zacetek IS NULL OR                 SELECT (DATE %s - to_date(to_char(termin.konec, 'YYYY-MM-DD'), 'YYYY-MM-DD'))>=0) OR 
+                    (SELECT (DATE %s - to_date(to_char(termin.zacetek, 'YYYY-MM-DD'), 'YYYY-MM-DD'))<=0)) AND sid NOT IN (SELECT sid FROM soba LEFT JOIN termin ON soba.sid=termin.soba WHERE soba.tip=%s AND soba.kapaciteta=%s AND 
+                     (DATE %s < to_date(to_char(termin.konec, 'YYYY-MM-DD'), 'YYYY-MM-DD')) AND (DATE %s > to_date(to_char(termin.zacetek, 'YYYY-MM-DD'), 'YYYY-MM-DD')))""",
+                    [str(soba_tip),kapaciteta,str(konec),str(zacetek),str(soba_tip),kapaciteta,str(konec),str(zacetek)])
+
+	## Če ne najde termina, mu izpišemo, da ni ok:
+        if cur.fetchone() is None:  
+                    return bottle.template("main.html",
+                                    uporabnisko_ime = uporabnisko_ime,
+				    oid=oid,
+				    soba_tip=soba_tip,
+				    kapaciteta=kapaciteta,
+				    termin=termin,
+				    zacetek=zacetek,
+				    konec=konec,
+                                    cena=None,
+				    napaka='Ta termin je žal zaseden, prosimo, izberite drugega.')
+
+        ## Če najde termin, je treba narest rezervacijo:  Najprej mu izpišemo info ceno, nato pa mora kliknt potrdi in se rezervacija vnese
+        ##Tukaj moramo narest še nekaj, kar bo aktiviralo gumb rezervacija
+        else:
+                    print(cena)   ##samo za preizkus izpišemo
+                    return bottle.template("main.html",
                                     uporabnisko_ime = uporabnisko_ime,
 				    oid=oid,
                                     cena=cena,
@@ -270,36 +290,18 @@ def nova_rezervacija():
 				    zacetek=zacetek,
 				    konec=konec,
 				    napaka=None)
-	    
-	
-"""	cur.execute("SELECT sid FROM soba WHERE NOT EXISTS (SELECT soba.sid FROM soba JOIN termin ON soba.sid=termin.soba WHERE soba.tip='Standard' AND soba.kapaciteta=2 AND (SELECT DATEDIFF(day,'2014-06-22',termin.konec)<=0) OR (SELECT DATEDIFF(DAY,'2014-06-27',termin.zacetek)<=0) AND soba.id=MIN)", [soba_tip,kapaciteta])
+                    
 
-	if cur.fetchone():
-                # Pokažemo informativno ceno: to je treba dat v html
-            print(cena)
+        
 
-                # Mu rečemo, naj potrdi
-                
-                # Če potrdi (klikne rezerviraj) vse je v redu, vstavimo nov termin bazo; če ne potrdi naj se vse izbriše in gre na začetno stran
-                # Mogoče bi tuki lahko dal dva gumba (da, ne) - da vsak sproži svoje
-                
-	    print("Rezervacija uspešno opravljena.")
-	    cur.execute("INSERT INTO termin (soba, zacetek, konec, oid) VALUES (%s, %s, %s, %s)",
-				  (soba, zacetek, konec, oid))
-	    bottle.redirect("/")
+##          print("Rezervacija uspešno opravljena.")
+##	    cur.execute("INSERT INTO termin (soba, zacetek, konec, oid) VALUES (%s, %s, %s, %s)",
+##				  (soba, zacetek, konec, oid))
+##	    bottle.redirect("/")
 		
-	else:
-		# Če je termin že zaseden, mu vrne izpolnjen obrazec še enkrat.
-	    napaka='Ta termin je že zaseden.'
-	    return bottle.template("main.html",
-				    oid=oid,
-				    soba=soba,
-				    kapaciteta=kapaciteta,
-				    termin=termin,
-				    zacetek=zacetek,
-				    konec=konec,
-				    napaka=napaka)"""
+	    
 
+##	cur.execute("SELECT sid FROM soba WHERE NOT EXISTS (SELECT soba.sid FROM soba JOIN termin ON soba.sid=termin.soba WHERE soba.tip='Standard' AND soba.kapaciteta=2 AND (SELECT DATEDIFF(day,'2014-06-22',termin.konec)<=0) OR (SELECT DATEDIFF(DAY,'2014-06-27',termin.zacetek)<=0) AND soba.id=MIN)", [soba_tip,kapaciteta])
 
 #==============================Izračun cene===============================================
 
@@ -310,6 +312,7 @@ def informativni_izracun(zacetek, konec, postavka_soba):
     #predelujem tako, da bojo vikendi šteti
 
     return cena
+
 
 
 #============================Izbris rezervacije====================================================        

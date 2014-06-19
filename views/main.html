@@ -30,33 +30,61 @@
 <!-- Buttons -->
 
 <div class="control-group">
-
-  <label class="control-label" for="singlebutton"></label>
-  <div class="controls">
-	  <font color="Black" size="1">Tip sobe&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	  &nbsp;&nbsp;&nbsp;&nbsp;Število postelj</font><br>
-    <select name="izbrana_soba">
-		<option value=" Standard" selected="">Standard</option>
+ 
+<div class="row">
+<!--p class="text-center">Tip sobe:</p-->
+ <div class="col-xs-8">
+    <label for="izbrana_soba">Tip sobe: </label>
+    <select class="form-control" name="izbrana_soba" id="izbrana_soba">
+    	<option value=" Standard" selected="">Standard</option>
 		<option value=" Nadstandard pogled na park">Nadstandard pogled na park</option>
 		<option value=" Nadstandard pogled na morje">Nadstandard pogled na morje</option>
 		<option value=" Deluxe pogled na park">Deluxe pogled na park</option>
 		<option value=" Deluxe pogled na morje">Deluxe pogled na morje</option>
 	</select>
-	<select name="stevilo_postelj">
+  </div>
+
+  <div class="col-xs-4">
+  <label for="stevilo_postelj">Št. postelj: </label>
+  <select class="form-control" name="stevilo_postelj" id="stevilo postelj">
 		<option value="2" selected="">2</option>
 		<option value="4">4</option>
 	</select>
   </div>
-  
+  <!--Za osebe je treba pol narest še if ... --->
+  <!--div class="col-xs-2">
+  <select class="form-control" name="stevilo_oseb">
+        <option value="1">1</option>
+		<option value="2" selected="">2</option>
+		<option value="3">3</option>
+		<option value="4">4</option>
+	</select>
+  </div-->
+</div>
+
+ 
 <!-- Date -->
 <h5>Izberite datum: </h5>
 	
-<div class="input-daterange input-group" id="datepicker">
+<div class="input-group" id="datepicker">
     <input type="text" class="datepicker1" name="zacetek"  placeholder="dd.mm.yyyy" size="15" required=""/>
     <span class="input-group-addon">do</span>
     <input type="text" class="datepicker2" name="konec"  placeholder="dd.mm.yyyy" size="15" required=""/>
 </div>
+
+<!--div class="checkbox">
+  <label>
+    <input type="checkbox" value="" name="zajtrk">
+    zajtrk
+  </label>
+</div>
+<div class="checkbox" >
+  <label>
+    <input type="checkbox" value="" name="dodatno_lezisce">
+    dodatno ležišče
+  </label>
+</div-->
+
 %if napaka: 
 	<div class="alert alert-warning">{{napaka}}</div>
 %end
@@ -70,15 +98,18 @@
     <button type="submit" id="singlebutton" name="singlebutton" class="btn btn-primary" >Informativni izračun</button>
   </div>
 </div><br>
+
 %if cena:
-<legend, font-size=15> Cena: {{cena}} &#8364</legend>
+<h4> Cena: <span class="label label-info"> {{cena}} &#8364 </span></h4>
+<!--legend, font-size=15> Cena: {{cena}} &#8364</legend-->
 %end
 
 
+
+
 <div class="control-group">
-  <label class="control-label" for="singlebutton"></label>
   <div class="controls">
-    <button id="singlebutton" name="singlebutton" class="btn btn-primary">Rezervirajte</button>
+    <button type="submit" id="singlebutton" name="singlebutton" class="btn btn-primary">Rezervirajte</button>
     <button type="reset" class="btn btn-default btn-sm">Reset</button>
   </div>
 </div>

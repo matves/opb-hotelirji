@@ -64,11 +64,12 @@
 
  
 <!-- Date -->
-<h5>Izberite datum: </h5>
-	
+<h5><b>Izberite datum:</b></h5>
 <div class="input-group" id="datepicker">
+<!--label for="zacetek">Datum prihoda: </label-->
     <input type="text" class="datepicker1" name="zacetek"  placeholder="dd.mm.yyyy" size="15" required=""/>
-    <span class="input-group-addon">do</span>
+    <!--button type="button" class="btn btn-default btn-sm" disabled="disabled">do</button-->
+	<!--label for="konec">Datum odhoda: </label-->
     <input type="text" class="datepicker2" name="konec"  placeholder="dd.mm.yyyy" size="15" required=""/>
 </div>
 
@@ -93,9 +94,9 @@
 <br>
 <form id="trac-forma" class="form-horizontal" method="post" type="submit" action=".">
 <div class="control-group">
-  <label class="control-label" for="singlebutton"></label>
+
   <div class="controls">
-    <button type="submit" id="singlebutton" name="singlebutton" class="btn btn-primary" >Informativni izračun</button>
+    <button type="submit" id="singlebutton" name="singlebutton" class="btn btn-primary">Informativni izračun</button>
   </div>
 </div><br>
 
@@ -105,8 +106,6 @@
 %end
 
 
-
-
 <div class="control-group">
   <div class="controls">
     <button type="submit" id="singlebutton" name="singlebutton" class="btn btn-primary">Rezervirajte</button>
@@ -114,15 +113,10 @@
   </div>
 </div>
 
-
-
-<form action="http://google.com">
-    <input type="submit" value="Go to Google">
 </form>
 
 
 </fieldset>
-</form>
  </div>
 
 

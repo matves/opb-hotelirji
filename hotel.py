@@ -227,34 +227,35 @@ def nova_rezervacija():
 	(uporabnisko_ime, ime, oid) = get_user()
 	soba_tip = bottle.request.forms.izbrana_soba
 	kapaciteta = bottle.request.forms.stevilo_postelj
+	#FUNKCIJA, KI IZ PREDPISANEGA FORMATA RAZBERE DATUM:
+	zacetek=datetime.strptime(bottle.request.forms.zacetek,'%d.%m.%Y').date()
+	konec=datetime.strptime(bottle.request.forms.konec,'%d.%m.%Y').date()
+
+	if (zacetek < datetime.today().date() or konec <= zacetek):
+            napaka = "Prosimo, vnesite veljaven datum."
+        else:
+            cas_bivanja=(konec-zacetek).days
+            cena=postavka_soba*cas_bivanja
+	    cur = baza.cursor()
+	    cur.execute("SELECT cena FROM soba WHERE tip=%s AND kapaciteta=%s", [str(soba_tip),kapaciteta])
+	    postavka_soba=float(tuple(cur)[0][0])
+	    
+	    termin = rezervacija()
+	    # Ali je soba takrat ze zasedena?
+	    cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
 	
-	# TREBA JE ŠE NASTAVIT, DA BO SPREJELO DATUM V OBLIKI, KOT GA RAZUME PYTHONOVA FUNKCIJA DATETIME
-	# ISTO V SPODNJI FUNKCIJI informativni_izracun()
+	    # TLE JE TREBA POPRAVIT TA SELECT, DA NAJDE ČE JE PROST TERMIN V IZBRANEM TIPU SOBE
 	
-	#zacetek=datetime.date(bottle.request.forms.zacetek)
-	#konec=datetime.date(bottle.request.forms.konec)
-	zacetek = datetime.date(2014,6,18)
-	konec = datetime.date(2014,6,23)
-	cas_bivanja=(konec-zacetek).days
-	cena=postavka_soba*cas_bivanja
-	cur = baza.cursor()
-	cur.execute("SELECT cena FROM soba WHERE tip=%s AND kapaciteta=%s", [str(soba_tip),kapaciteta])
-	postavka_soba=float(tuple(cur)[0][0])
-	termin = rezervacija()
-	# Ali je soba takrat ze zasedena?
-	cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
-	
-	# TLE JE TREBA POPRAVIT TA SELECT, DA NAJDE ČE JE PROST TERMIN V IZBRANEM TIPU SOBE
-	
-	cur.execute("SELECT sid FROM soba WHERE NOT EXISTS (SELECT soba.sid FROM soba JOIN termin ON soba.sid=termin.soba WHERE soba.tip='Standard' AND soba.kapaciteta=2 AND (SELECT DATEDIFF(day,'2014-06-22',termin.konec)<=0) OR (SELECT DATEDIFF(DAY,'2014-06-27',termin.zacetek)<=0) AND soba.id=MIN)", [soba_tip,kapaciteta])
-	if cur.fetchone():
-		# Vse je v redu, vstavimo nov termin bazo
+	    cur.execute("SELECT sid FROM soba WHERE NOT EXISTS (SELECT soba.sid FROM soba JOIN termin ON soba.sid=termin.soba WHERE soba.tip='Standard' AND soba.kapaciteta=2 AND (SELECT DATEDIFF(day,'2014-06-22',termin.konec)<=0) OR (SELECT DATEDIFF(DAY,'2014-06-27',termin.zacetek)<=0) AND soba.id=MIN)", [soba_tip,kapaciteta])
+	    if cur.fetchone():
+                # Vse je v redu, vstavimo nov termin bazo
 		print("Rezervacija uspešno opravljena.")
 		cur.execute("INSERT INTO termin (soba, zacetek, konec, oid) VALUES (%s, %s, %s, %s)",
 				  (soba, zacetek, konec, oid))
 		bottle.redirect("/")
-	else:
+	    else:
 		# Če je termin že zaseden
+		napaka='Ta termin je že zaseden.'
 		return bottle.template("main.html",
 					oid=oid,
 					soba=soba,
@@ -262,10 +263,11 @@ def nova_rezervacija():
 					termin=termin,
 					zacetek=zacetek,
 					konec=konec,
-					napaka='Ta termin je že zaseden.')
+					napaka=napaka)
 
 
 #==============================Izračun cene===============================================
+##Še nekaj, kar bo preračunalo vikende
 @bottle.post("/")
 def informativni_izracun():
 	"""Izračuna ceno, ki jo bo moral gost plačati, če najame sobo."""

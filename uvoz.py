@@ -14,8 +14,8 @@ import csv
 with open('oseba.csv', newline='') as csvfile:
     spamreader = csv.reader(csvfile, delimiter=',')
     for row in spamreader:
-        cur.execute("""INSERT INTO oseba (oid,ime,priimek,email,tel_st)
-                       VALUES (%s,%s,%s,%s,%s)""", (row[0],row[1],row[2],row[3],row[4]))
+        cur.execute("""INSERT INTO oseba (ime,priimek,email,tel_st)
+                       VALUES (%s,%s,%s,%s)""", (row[1],row[2],row[3],row[4]))
 
 #IMPORTAMO SOBE
 with open('soba.csv', newline='') as csvfile:

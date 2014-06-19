@@ -1,6 +1,10 @@
 %rebase ('base.html', title='Hotel Prestige')
 
+<link href="/static/css/bootstrap.min.css" rel="stylesheet">
+	<!--link href="/static/css/bootstrap.css" rel="stylesheet"-->
 
+ <!-- Custom styles for this template -->
+ <link href="/static/progress.css" rel="stylesheet">
 <style type="text/css">
 #wrap {
    width:1200px;
@@ -64,12 +68,11 @@
 
  
 <!-- Date -->
-<h5><b>Izberite datum:</b></h5>
+<h5>Izberite datum: </h5>
+	
 <div class="input-group" id="datepicker">
-<!--label for="zacetek">Datum prihoda: </label-->
     <input type="text" class="datepicker1" name="zacetek"  placeholder="dd.mm.yyyy" size="15" required=""/>
-    <!--button type="button" class="btn btn-default btn-sm" disabled="disabled">do</button-->
-	<!--label for="konec">Datum odhoda: </label-->
+    <span class="input-group-addon">do</span>
     <input type="text" class="datepicker2" name="konec"  placeholder="dd.mm.yyyy" size="15" required=""/>
 </div>
 
@@ -94,9 +97,9 @@
 <br>
 <form id="trac-forma" class="form-horizontal" method="post" type="submit" action=".">
 <div class="control-group">
-
+  <label class="control-label" for="singlebutton"></label>
   <div class="controls">
-    <button type="submit" id="singlebutton" name="singlebutton" class="btn btn-primary">Informativni izračun</button>
+    <button type="submit" id="singlebutton" name="singlebutton" class="btn btn-primary" >Informativni izračun</button>
   </div>
 </div><br>
 
@@ -106,6 +109,8 @@
 %end
 
 
+
+
 <div class="control-group">
   <div class="controls">
     <button type="submit" id="singlebutton" name="singlebutton" class="btn btn-primary">Rezervirajte</button>
@@ -113,21 +118,92 @@
   </div>
 </div>
 
+
+
+<form action="http://google.com">
+    <input type="submit" value="Go to Google">
 </form>
 
 
 </fieldset>
+</form>
  </div>
 
 
 </div>
 
-
  <!--=====================================Desna stran dokumenta========================================================================-->
  <div id="right_col">
  <!-- ce je administrator vidi vse -->
+ <div class="container">
+ <label for="stevilo_postelj">Zasedenost hotela: </label>
+ <div class="row">
+        <div class="col-md-7 col-md-offset-0">
+	<div class="row">                   
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="width: {{ratio}}%;">
+                <span class="sr-only">0% Complete</span>
+            </div>
+            
+            <span class="progress-completed">0%</span>
+        </div>
+	</div>
+</div>
+</div>
+</div>
+  <a href="/">
+  <legend>Rezervacije</legend>
+  </a>
  %if uporabnisko_ime == 'admin':
+
+ <div class="panel-body">
+	<form class="form-horizontal" role="form" method="post" action=".">
+	<div class="form-group">
+		<div class="col-sm-5">
+			<input class="form-control" placeholder="Ime gosta" type="text"
+			%if ime_gosta:
+			value="{{ime_gosta}}"
+			%end
+			name="ime_gosta"
+			 autofocus> 
+		</div>
+	</div>
+	<div class="form-group">
+		<div class="col-sm-5">
+			<input class="form-control" placeholder="Priimek gosta" type="text"
+			%if priimek_gosta:
+			value="{{priimek_gosta}}"
+			%end
+			name="priimek_gosta"
+			 autofocus> 
+		</div>
+	</div>
+	<div class="form-group">
+		<div class="col-sm-5">
+			<input class="form-control" placeholder="Telefonska številka" type="text"
+			%if tel_st_gosta:
+			value="{{tel_st_gosta}}"
+			%end
+			name="tel_st_gosta"
+			 autofocus> 
+		</div>
+	</div>
+	<div class="form-group last">
+		<div class="col-sm-offset-3 col-sm-9">
+			<button type="submit" class="btn btn-success btn-sm">
+				Poglej rezervacije</button>
+				 <!--button type="reset" class="btn btn-default btn-sm">
+				Reset</button-->
+		</div>
+	</div>
+	</form>
+</div>
+
+%if ime_izpis:
+ <legend>Rezervacije za osebo {{ime_izpis}} {{priimek_izpis}}</legend>
+%else:
  <legend>Vse rezervacije</legend>
+%end
  <table style="width:800px">
 <tr>
   <th>Ime</th>
@@ -137,15 +213,17 @@
   <th>Dan prihoda</th>
   <th>Dan odhoda</th>
 </tr>
- 
+
 %for (ime, priimek, tel_st,soba,zacetek,konec) in termin:
 %include ('termin.html', ime=ime, priimek=priimek, tel_st=tel_st,soba=soba,zacetek=zacetek,konec=konec)
 %end
+
 </table> 
  
 <!-- navaden uporabnik vidi le svoje rezervacije -->
 %else:
  <legend>Moje rezervacije</legend>
+
  <table style="width:800px">
 <tr>
   <th>Številka soba</th>
@@ -155,7 +233,7 @@
   <th>Dan odhoda</th>
   <th>Cena na noč</th>
 </tr>
- 
+
 %for (ime, priimek, tel_st,soba,zacetek,konec) in termin:
 <tr>
   <td>{{ime}}</td>
@@ -168,6 +246,7 @@
 %end
 </table> 
 %end 
+
 
 </div>
 </div>

@@ -100,6 +100,17 @@ def get_user(auto_login = True):
     else:
         return None
 
+def st_rez():
+    c = baza.cursor()
+    c.execute(
+    """SELECT count(*) FROM termin WHERE termin.zacetek <= now() AND termin.konec >= now() GROUP BY termin 
+    """)
+    # Rezultat predelamo v nabor.
+    st = tuple(c)
+    c.close()
+    # Vrnemo nabor, kot je opisano v dokumentaciji funkcije:
+    return st
+
 ######################################################################
 # Funkcije, ki obdelajo zahteve odjemalcev.
 
@@ -131,17 +142,19 @@ def main():
                             priimek_izpis=None,
                             cena=None,
                             zacetek=None,
-                            konec=None)
+                            konec=None,
+                            ratio=len(st_rez())/60.)
     else:
         termin = rezervacija(oid)
         return bottle.template("main.html",
-                           uporabnisko_ime = uporabnisko_ime,
-                           oid=oid,
-                           termin=termin,
-                           napaka=None,
-			   cena=None,
-			   zacetek=None,
-			   konec=None)
+                            uporabnisko_ime = uporabnisko_ime,
+                            oid=oid,
+                            termin=termin,
+                            napaka=None,
+                            cena=None,
+                            zacetek=None,
+                            konec=None,
+                            ratio=len(st_rez())/60.)
 ##==================================LOGIN, LOGOUT==============================================
 ## ko pridemo prvic gor, nam samo odpre login:
 @bottle.get("/login/")  
@@ -285,8 +298,9 @@ def nova_rezervacija():
                                     priimek_gosta=None,
                                     tel_st_gosta=None,
                                     ime_izpis=None,
-                                    priimek_izpis=None
-                                   )
+                                    priimek_izpis=None,
+                                    ratio=len(st_rez())/60.)
+                                   
         else:
             cur = baza.cursor()
             cur.execute("SELECT cena FROM soba WHERE tip=%s AND kapaciteta=%s", [str(soba_tip),kapaciteta])
@@ -313,7 +327,8 @@ def nova_rezervacija():
                                         priimek_gosta=None,
                                         tel_st_gosta=None,
                                         ime_izpis=None,
-                                        priimek_izpis=None)
+                                        priimek_izpis=None,
+                                        ratio=len(st_rez())/60.)
     else:
         cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cur.execute("SELECT 1 FROM termin JOIN oseba ON termin.oseba=oseba.oid WHERE ime = %s AND priimek = %s AND tel_st = %s", [ime_gosta, priimek_gosta, tel_st_gosta])
@@ -336,7 +351,8 @@ def nova_rezervacija():
                 zacetek=None,
                 konec=None,
                 soba_tip=None,
-                kapaciteta=None)
+                kapaciteta=None,
+                ratio=len(st_rez())/60.)
               #gremo na osnovno stran, in vse v okencih pobrišemo
         else:
             cur.execute("SELECT oid FROM oseba WHERE ime = %s AND priimek = %s AND tel_st = %s", [ime_gosta, priimek_gosta, tel_st_gosta])
@@ -356,8 +372,8 @@ def nova_rezervacija():
                 zacetek=None,
                 konec=None,
                 soba_tip=None,
-                kapaciteta=None)
-        
+                kapaciteta=None,
+                ratio=len(st_rez())/60.)
 
 #==============================Izračun cene===============================================
 

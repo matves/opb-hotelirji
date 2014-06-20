@@ -203,6 +203,9 @@
  
  %if uporabnisko_ime == 'admin':
 <legend>Prikaži rezervacije za: </legend>
+%if napaka1:
+ <div class="alert alert-warning">{{napaka1}}</div>
+ %end
  <div class="panel-body">
 	<form class="form-horizontal" role="form" method="post" action=".">
 	<div class="form-group">

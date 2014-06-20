@@ -148,7 +148,8 @@ def main():
                             ratio=round(len(st_rez())/60.,1),
                             ime_gosta_1=None,
                             priimek_gosta_1=None,
-                            tel_st_gosta_1=None)
+                            tel_st_gosta_1=None,
+                            napaka1=None)
     else:
         termin = rezervacija(oid)
         return bottle.template("main.html",
@@ -169,7 +170,8 @@ def main():
                             ratio=round(len(st_rez())/60.,1),
                             ime_gosta_1=None,
                             priimek_gosta_1=None,
-                            tel_st_gosta_1=None)
+                            tel_st_gosta_1=None,
+                            napaka1=None)
 ##==================================LOGIN, LOGOUT==============================================
 ## ko pridemo prvic gor, nam samo odpre login:
 @bottle.get("/login/")  
@@ -331,7 +333,8 @@ def nova_rezervacija():
                                     ratio=round(len(st_rez())/60.,1),
                                     ime_gosta_1=ime_gosta_1,
                                     priimek_gosta_1=ime_gosta_1,
-                                    tel_st_gosta_1=ime_gosta_1)
+                                    tel_st_gosta_1=ime_gosta_1,
+                                   napaka1=None)
                                    
         else:
             cur = baza.cursor()
@@ -363,7 +366,8 @@ def nova_rezervacija():
                                         ratio=round(len(st_rez())/60.,1),
                                         ime_gosta_1=ime_gosta_1,
                                         priimek_gosta_1=priimek_gosta_1,
-                                        tel_st_gosta_1=tel_st_gosta_1)
+                                        tel_st_gosta_1=tel_st_gosta_1,
+                                       napaka1=None)
     else:
         cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cur.execute("SELECT 1 FROM termin JOIN oseba ON termin.oseba=oseba.oid WHERE ime = %s AND priimek = %s AND tel_st = %s", [ime_gosta, priimek_gosta, tel_st_gosta])
@@ -379,7 +383,7 @@ def nova_rezervacija():
                 ime_gosta=None,
                 priimek_gosta=None,
                 tel_st_gosta=None,
-                napaka="Nepravilen vnos",
+                napaka1="Nepravilen vnos",
                 ime_izpis=None,
                 priimek_izpis=None,
                 cena=None,
@@ -390,7 +394,8 @@ def nova_rezervacija():
                 ratio=round(len(st_rez())/60.,1),
                 ime_gosta_1=None,
                 priimek_gosta_1=None,
-                tel_st_gosta_1=None)
+                tel_st_gosta_1=None,
+                napaka=None)
               #gremo na osnovno stran, in vse v okencih pobrišemo
         else:
             cur.execute("SELECT oid FROM oseba WHERE ime = %s AND priimek = %s AND tel_st = %s", [ime_gosta, priimek_gosta, tel_st_gosta])
@@ -414,7 +419,8 @@ def nova_rezervacija():
                 ratio=round(len(st_rez())/60.,1),
                 ime_gosta_1=None,
                 priimek_gosta_1=None,
-                tel_st_gosta_1=None)
+                tel_st_gosta_1=None,
+                napaka1=None)
 
 #==============================Izračun cene===============================================
 

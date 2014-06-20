@@ -134,6 +134,8 @@ def main():
                             uporabnisko_ime = uporabnisko_ime,
                             oid=oid,
                             termin=termin,
+                            soba_tip=None,
+                            kapaciteta=None,
                             ime_gosta=None,
                             priimek_gosta=None,
                             tel_st_gosta=None,
@@ -153,7 +155,14 @@ def main():
                             uporabnisko_ime = uporabnisko_ime,
                             oid=oid,
                             termin=termin,
+                            soba_tip=None,
+                            kapaciteta=None,
+                            ime_gosta=None,
+                            priimek_gosta=None,
+                            tel_st_gosta=None,
                             napaka=None,
+                            ime_izpis=None,
+                            priimek_izpis=None,
                             cena=None,
                             zacetek=None,
                             konec=None,
@@ -283,14 +292,16 @@ def nova_rezervacija():
     if len(ime_gosta)==0:#ce smo na levi
         if uporabnisko_ime == 'admin':
             cur = baza.cursor()
-            r = cur.execute("SELECT 1 FROM oseba WHERE ime = %s AND priimek = %s AND tel_st=%s", [ime_gosta_1,priimek_gosta_1,tel_st_gosta_1])
-            if r == None:#če ga ni ga vnesemo
+            cur.execute("""SELECT 1 FROM oseba WHERE ime = %s AND priimek = %s AND tel_st=%s""", [ime_gosta_1,priimek_gosta_1,tel_st_gosta_1])
+            if cur.fetchone()==None:#če ga ni ga vnesemo
+                print ("VNAŠAMO")
                 cur.execute("INSERT INTO oseba (ime, priimek,tel_st) VALUES (%s,%s,%s)", [ime_gosta_1,priimek_gosta_1,tel_st_gosta_1])
                              
         ##########OD TUKEJ NAPREJ SI TI TILEN
 
         
         #FUNKCIJA, KI IZ PREDPISANEGA FORMATA RAZBERE DATUM:
+        
         zacetek=datetime.strptime(bottle.request.forms.zacetek,'%d.%m.%Y').date()
         konec=datetime.strptime(bottle.request.forms.konec,'%d.%m.%Y').date()
         #še enkrat prikaz leve strani
@@ -318,9 +329,9 @@ def nova_rezervacija():
                                     ime_izpis=None,
                                     priimek_izpis=None,
                                     ratio=round(len(st_rez())/60.,1),
-                                    ime_gosta_1=None,
-                                    priimek_gosta_1=None,
-                                    tel_st_gosta_1=None)
+                                    ime_gosta_1=ime_gosta_1,
+                                    priimek_gosta_1=ime_gosta_1,
+                                    tel_st_gosta_1=ime_gosta_1)
                                    
         else:
             cur = baza.cursor()

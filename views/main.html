@@ -85,6 +85,9 @@
 		<option value=" Nadstandard pogled na morje">Nadstandard pogled na morje</option>
 		<option value=" Deluxe pogled na park">Deluxe pogled na park</option>
 		<option value=" Deluxe pogled na morje">Deluxe pogled na morje</option>
+		%if soba_tip:
+		option value="{{soba_tip}}"
+		%end
 	</select>
   </div>
 
@@ -93,6 +96,9 @@
   <select class="form-control" name="stevilo_postelj" id="stevilo postelj">
 		<option value="2" selected="">2</option>
 		<option value="4">4</option>
+		%if kapaciteta:
+		option value="{{kapaciteta}}"
+		%end
 	</select>
   </div>
   <!--Za osebe je treba pol narest še if ... --->
@@ -112,15 +118,9 @@
 	
 <div class="input-group" id="datepicker">
     <input type="text" class="datepicker1" name="zacetek"  placeholder="dd.mm.yyyy" size="15" required=""
-	%if zacetek:
-	value="{{zacetek}}"
-	%end
 	/>
     <span class="input-group-addon">do</span>
     <input type="text" class="datepicker2" name="konec"  placeholder="dd.mm.yyyy" size="15" required=""
-	%if konec:
-	value="{{konec}}"
-	%end
 	/>
 </div>
 

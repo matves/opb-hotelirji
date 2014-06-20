@@ -2,7 +2,7 @@
 
 import bottle
 import hashlib # računanje MD5 kriptografski hash za gesla
-from datetime import date, timedelta, datetime
+# from datetime import datetime  #to nevemo še če bomo rabili
 import psycopg2, psycopg2.extensions, psycopg2.extras
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE) # se znebimo problemov s sumniki
 from datetime import date, datetime
@@ -52,7 +52,7 @@ def rezervacija(oid):
     """
     c = baza.cursor()
     c.execute(
-    """SELECT sid, tip, kapaciteta, zacetek, konec, cena FROM soba JOIN termin ON termin.soba = soba.sid WHERE  termin.oseba = %s
+    """SELECT sid, tip, kapaciteta, zacetek, konec, cena FROM soba JOIN termin ON termin.soba = soba.sid WHERE  termin.oseba = %s AND konec >= now()
     """, [oid])
     # Rezultat predelamo v nabor.
     termin = tuple(c)
@@ -62,8 +62,8 @@ def rezervacija(oid):
             for (sid, tip, kapaciteta, zacetek, konec, cena) in termin)
 
 
-def rezervacija_1(oid):
-    """Vrne rezervacije navadnega uporabnika. 
+def rezervacija_1(oid):#
+    """Vrne rezervacije navadnega uporabnika pri pogledu administratorja. 
     """
     c = baza.cursor()
     c.execute(
@@ -143,7 +143,10 @@ def main():
                             cena=None,
                             zacetek=None,
                             konec=None,
-                            ratio=round(len(st_rez())/60.,1))
+                            ratio=round(len(st_rez())/60.,1),
+                            ime_gosta_1=None,
+                            priimek_gosta_1=None,
+                            tel_st_gosta_1=None)
     else:
         termin = rezervacija(oid)
         return bottle.template("main.html",
@@ -154,7 +157,10 @@ def main():
                             cena=None,
                             zacetek=None,
                             konec=None,
-                            ratio=round(len(st_rez())/60.,1))
+                            ratio=round(len(st_rez())/60.,1),
+                            ime_gosta_1=None,
+                            priimek_gosta_1=None,
+                            tel_st_gosta_1=None)
 ##==================================LOGIN, LOGOUT==============================================
 ## ko pridemo prvic gor, nam samo odpre login:
 @bottle.get("/login/")  
@@ -271,7 +277,19 @@ def nova_rezervacija():
     ime_gosta = bottle.request.forms.ime_gosta
     priimek_gosta = bottle.request.forms.priimek_gosta
     tel_st_gosta = bottle.request.forms.tel_st_gosta
-    if len(ime_gosta)==0:
+    ime_gosta_1 = bottle.request.forms.ime_gosta_1
+    priimek_gosta_1 = bottle.request.forms.priimek_gosta_1
+    tel_st_gosta_1 = bottle.request.forms.tel_st_gosta_1
+    if len(ime_gosta)==0:#ce smo na levi
+        if uporabnisko_ime == 'admin':
+            cur = baza.cursor()
+            r = cur.execute("SELECT 1 FROM oseba WHERE ime = %s AND priimek = %s AND tel_st=%s", [ime_gosta_1,priimek_gosta_1,tel_st_gosta_1])
+            if r == None:#če ga ni ga vnesemo
+                cur.execute("INSERT INTO oseba (ime, priimek,tel_st) VALUES (%s,%s,%s)", [ime_gosta_1,priimek_gosta_1,tel_st_gosta_1])
+                             
+        ##########OD TUKEJ NAPREJ SI TI TILEN
+
+        
         #FUNKCIJA, KI IZ PREDPISANEGA FORMATA RAZBERE DATUM:
         zacetek=datetime.strptime(bottle.request.forms.zacetek,'%d.%m.%Y').date()
         konec=datetime.strptime(bottle.request.forms.konec,'%d.%m.%Y').date()
@@ -299,7 +317,10 @@ def nova_rezervacija():
                                     tel_st_gosta=None,
                                     ime_izpis=None,
                                     priimek_izpis=None,
-                                    ratio=round(len(st_rez())/60.,1))
+                                    ratio=round(len(st_rez())/60.,1),
+                                    ime_gosta_1=None,
+                                    priimek_gosta_1=None,
+                                    tel_st_gosta_1=None)
                                    
         else:
             cur = baza.cursor()
@@ -328,7 +349,10 @@ def nova_rezervacija():
                                         tel_st_gosta=None,
                                         ime_izpis=None,
                                         priimek_izpis=None,
-                                        ratio=round(len(st_rez())/60.,1))
+                                        ratio=round(len(st_rez())/60.,1),
+                                        ime_gosta_1=ime_gosta_1,
+                                        priimek_gosta_1=priimek_gosta_1,
+                                        tel_st_gosta_1=tel_st_gosta_1)
     else:
         cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cur.execute("SELECT 1 FROM termin JOIN oseba ON termin.oseba=oseba.oid WHERE ime = %s AND priimek = %s AND tel_st = %s", [ime_gosta, priimek_gosta, tel_st_gosta])
@@ -352,7 +376,10 @@ def nova_rezervacija():
                 konec=None,
                 soba_tip=None,
                 kapaciteta=None,
-                ratio=round(len(st_rez())/60.,1))
+                ratio=round(len(st_rez())/60.,1),
+                ime_gosta_1=None,
+                priimek_gosta_1=None,
+                tel_st_gosta_1=None)
               #gremo na osnovno stran, in vse v okencih pobrišemo
         else:
             cur.execute("SELECT oid FROM oseba WHERE ime = %s AND priimek = %s AND tel_st = %s", [ime_gosta, priimek_gosta, tel_st_gosta])
@@ -373,31 +400,19 @@ def nova_rezervacija():
                 konec=None,
                 soba_tip=None,
                 kapaciteta=None,
-                ratio=round(len(st_rez())/60.,1))
+                ratio=round(len(st_rez())/60.,1),
+                ime_gosta_1=None,
+                priimek_gosta_1=None,
+                tel_st_gosta_1=None)
 
 #==============================Izračun cene===============================================
+
 def informativni_izracun(zacetek, konec, postavka_soba):
     """Izračuna ceno, ki jo bo moral gost plačati, če najame sobo - glede na sobo in čas."""
     cas_bivanja=(konec-zacetek).days
+    cena=postavka_soba*cas_bivanja
+    #predelujem tako, da bojo vikendi šteti
 
-    # Definiramo imena dni tako kot jih ima funkcija date.weekday(): Monday is 0 and Sunday is 6
-    (PON,TOR,SRE,CET,PET,SOB,NED) = range(7)
-    # Mi v resnici gledamo nočitve, zato je nedelja pod delovnimi in petek ni
-    delovni=(NED,PON,TOR,SRE,CET)
-
-    # Pogledamo, koliko je to tednov in koliko dni ostane 
-    tedni, doddnevi = divmod(cas_bivanja, 7)
-    stdelovni = (tedni + 1) * len(delovni)
-
-    # Odštejemo delovne dni, ki bi prišli v preostali teden (odštevamo od 8 zaradi funkcije range)
-    # Konec-1 zato, ker se šteje zadnja nočitev
-    for d in range(1, 8 - doddnevi):
-        if (konec + timedelta(d - 1 )).weekday() in delovni:
-            stdelovni -= 1
-            
-    stvikend = cas_bivanja-stdelovni
-    print('delovni=',stdelovni,'vikend=',stvikend)
-    cena=postavka_soba*(stdelovni + stvikend*1.2)
     return cena
 
 

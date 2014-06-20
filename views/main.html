@@ -1,6 +1,10 @@
 %rebase ('base.html', title='Hotel Prestige')
 
+<link href="/static/css/bootstrap.min.css" rel="stylesheet">
+	<!--link href="/static/css/bootstrap.css" rel="stylesheet"-->
 
+ <!-- Custom styles for this template -->
+ <link href="/static/progress.css" rel="stylesheet">
 <style type="text/css">
 #wrap {
    width:1200px;
@@ -24,6 +28,46 @@
 <form id="trac-forma" class="form-horizontal" method="post" type="submit" action=".">
 <fieldset>
 
+<!--=====================================za administratorja============ -->
+%if uporabnisko_ime == 'admin':
+<legend>Vpiši podatke za gosta: </legend>
+ <div class="panel-body">
+	<form class="form-horizontal" role="form" method="post" action=".">
+	<div class="form-group">
+		<div class="col-sm-10">
+			<input class="form-control" placeholder="Ime gosta" type="text"
+			%if ime_gosta_1:
+			value="{{ime_gosta_1}}"
+			%end
+			name="ime_gosta_1"
+			 autofocus> 
+		</div>
+	</div>
+	<div class="form-group">
+		<div class="col-sm-10">
+			<input class="form-control" placeholder="Priimek gosta" type="text"
+			%if priimek_gosta_1:
+			value="{{priimek_gosta_1}}"
+			%end
+			name="priimek_gosta_1"
+			 autofocus> 
+		</div>
+	</div>
+	<div class="form-group">
+		<div class="col-sm-10">
+			<input class="form-control" placeholder="Telefonska številka" type="text"
+			%if priimek_gosta_1:
+			value="{{tel_st_gosta_1}}"
+			%end
+			name="tel_st_gosta_1"
+			 autofocus> 
+		</div>
+	</div>
+	
+</div>
+%end
+
+
 <!-- Form Name -->
 <legend>Izberite: </legend>
 
@@ -36,67 +80,66 @@
  <div class="col-xs-8">
     <label for="izbrana_soba">Tip sobe: </label>
     <select class="form-control" name="izbrana_soba" id="izbrana_soba">
-     <option value=" Standard" selected="">Standard</option>
-<option value=" Nadstandard pogled na park">Nadstandard pogled na park</option>
-<option value=" Nadstandard pogled na morje">Nadstandard pogled na morje</option>
-<option value=" Deluxe pogled na park">Deluxe pogled na park</option>
-<option value=" Deluxe pogled na morje">Deluxe pogled na morje</option>
-</select>
+    	<option value=" Standard" selected="">Standard</option>
+		<option value=" Nadstandard pogled na park">Nadstandard pogled na park</option>
+		<option value=" Nadstandard pogled na morje">Nadstandard pogled na morje</option>
+		<option value=" Deluxe pogled na park">Deluxe pogled na park</option>
+		<option value=" Deluxe pogled na morje">Deluxe pogled na morje</option>
+	</select>
   </div>
 
   <div class="col-xs-4">
   <label for="stevilo_postelj">Št. postelj: </label>
   <select class="form-control" name="stevilo_postelj" id="stevilo postelj">
-<option value="2" selected="">2</option>
-<option value="4">4</option>
-</select>
+		<option value="2" selected="">2</option>
+		<option value="4">4</option>
+	</select>
   </div>
   <!--Za osebe je treba pol narest še if ... --->
   <!--div class="col-xs-2">
-<select class="form-control" name="stevilo_oseb">
-<option value="1">1</option>
-<option value="2" selected="">2</option>
-<option value="3">3</option>
-<option value="4">4</option>
-</select>
-</div-->
+  <select class="form-control" name="stevilo_oseb">
+        <option value="1">1</option>
+		<option value="2" selected="">2</option>
+		<option value="3">3</option>
+		<option value="4">4</option>
+	</select>
+  </div-->
 </div>
 
  
 <!-- Date -->
-<h5><b>Izberite datum:</b></h5>
+<h5>Izberite datum: </h5>
+	
 <div class="input-group" id="datepicker">
-<!--label for="zacetek">Datum prihoda: </label-->
-    <input type="text" class="datepicker1" name="zacetek" placeholder="dd.mm.yyyy" size="15" required=""/>
-    <!--button type="button" class="btn btn-default btn-sm" disabled="disabled">do</button-->
-<!--label for="konec">Datum odhoda: </label-->
-    <input type="text" class="datepicker2" name="konec" placeholder="dd.mm.yyyy" size="15" required=""/>
+    <input type="text" class="datepicker1" name="zacetek"  placeholder="dd.mm.yyyy" size="15" required=""/>
+    <span class="input-group-addon">do</span>
+    <input type="text" class="datepicker2" name="konec"  placeholder="dd.mm.yyyy" size="15" required=""/>
 </div>
 
 <!--div class="checkbox">
-<label>
-<input type="checkbox" value="" name="zajtrk">
-zajtrk
-</label>
+  <label>
+    <input type="checkbox" value="" name="zajtrk">
+    zajtrk
+  </label>
 </div>
 <div class="checkbox" >
-<label>
-<input type="checkbox" value="" name="dodatno_lezisce">
-dodatno ležišče
-</label>
+  <label>
+    <input type="checkbox" value="" name="dodatno_lezisce">
+    dodatno ležišče
+  </label>
 </div-->
 
-%if napaka:
-<div class="alert alert-warning">{{napaka}}</div>
+%if napaka: 
+	<div class="alert alert-warning">{{napaka}}</div>
 %end
-
+	
 <!-- Textarea -->
 <br>
 <form id="trac-forma" class="form-horizontal" method="post" type="submit" action=".">
 <div class="control-group">
-
+  <label class="control-label" for="singlebutton"></label>
   <div class="controls">
-    <button type="submit" id="singlebutton" name="singlebutton" class="btn btn-primary">Informativni izračun</button>
+    <button type="submit" id="singlebutton" name="singlebutton" class="btn btn-primary" >Informativni izračun</button>
   </div>
 </div><br>
 
@@ -106,6 +149,8 @@ dodatno ležišče
 %end
 
 
+
+
 <div class="control-group">
   <div class="controls">
     <button type="submit" id="singlebutton" name="singlebutton" class="btn btn-primary">Rezervirajte</button>
@@ -113,24 +158,29 @@ dodatno ležišče
   </div>
 </div>
 
+
+
+<form action="http://google.com">
+    <input type="submit" value="Go to Google">
 </form>
 
 
 </fieldset>
+</form>
+</form>
  </div>
 
 
 </div>
 
-
  <!--=====================================Desna stran dokumenta========================================================================-->
  <div id="right_col">
  <!-- ce je administrator vidi vse -->
  <div class="container">
- <label for="stevilo_postelj">Zasedenost hotela: </label>
+ <label for="stevilo_postelj">Trenutna zasedenost hotela: </label>
  <div class="row">
         <div class="col-md-7 col-md-offset-0">
-<div class="row">
+	<div class="row">                   
         <div class="progress">
             <div class="progress-bar" role="progressbar" aria-valuenow="{{100*ratio}}" aria-valuemin="0" aria-valuemax="100" style="width: {{100*ratio}}%;">
                 <span class="sr-only">{{100*ratio}}% Complete</span>
@@ -138,60 +188,62 @@ dodatno ležišče
             
             <span class="progress-completed">{{100*ratio}}%</span>
         </div>
+	</div>
 </div>
 </div>
 </div>
-</div>
-  <a href="/">
-  <legend>Rezervacije</legend>
-  </a>
+ 
  %if uporabnisko_ime == 'admin':
-
+<legend>Prikaži rezervacije za: </legend>
  <div class="panel-body">
-<form class="form-horizontal" role="form" method="post" action=".">
-<div class="form-group">
-<div class="col-sm-5">
-<input class="form-control" placeholder="Ime gosta" type="text"
-%if ime_gosta:
-value="{{ime_gosta}}"
-%end
-name="ime_gosta"
-autofocus>
-</div>
-</div>
-<div class="form-group">
-<div class="col-sm-5">
-<input class="form-control" placeholder="Priimek gosta" type="text"
-%if priimek_gosta:
-value="{{priimek_gosta}}"
-%end
-name="priimek_gosta"
-autofocus>
-</div>
-</div>
-<div class="form-group">
-<div class="col-sm-5">
-<input class="form-control" placeholder="Telefonska številka" type="text"
-%if tel_st_gosta:
-value="{{tel_st_gosta}}"
-%end
-name="tel_st_gosta"
-autofocus>
-</div>
-</div>
-<div class="form-group last">
-<div class="col-sm-offset-3 col-sm-9">
-<button type="submit" class="btn btn-success btn-sm">
-Poglej rezervacije</button>
-<!--button type="reset" class="btn btn-default btn-sm">
-Reset</button-->
-</div>
-</div>
-</form>
+	<form class="form-horizontal" role="form" method="post" action=".">
+	<div class="form-group">
+		<div class="col-sm-5">
+			<input class="form-control" placeholder="Ime gosta" type="text"
+			%if ime_gosta:
+			value="{{ime_gosta}}"
+			%end
+			name="ime_gosta"
+			 autofocus> 
+		</div>
+	</div>
+	<div class="form-group">
+		<div class="col-sm-5">
+			<input class="form-control" placeholder="Priimek gosta" type="text"
+			%if priimek_gosta:
+			value="{{priimek_gosta}}"
+			%end
+			name="priimek_gosta"
+			 autofocus> 
+		</div>
+	</div>
+	<div class="form-group">
+		<div class="col-sm-5">
+			<input class="form-control" placeholder="Telefonska številka" type="text"
+			%if tel_st_gosta:
+			value="{{tel_st_gosta}}"
+			%end
+			name="tel_st_gosta"
+			 autofocus> 
+		</div>
+	</div>
+	<div class="form-group last">
+		<div class="col-sm-offset-3 col-sm-9">
+			<button type="submit" class="btn btn-success btn-sm">
+				Poglej rezervacije</button>
+				 <!--button type="reset" class="btn btn-default btn-sm">
+				Reset</button-->
+		</div>
+	</div>
+	</form>
 </div>
 
 %if ime_izpis:
- <legend>Rezervacije za osebo {{ime_izpis}} {{priimek_izpis}}</legend>
+ <legend>Rezervacije za osebo {{ime_izpis}} {{priimek_izpis}} &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+ &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+ <a href="/">
+  Vse rezervacije</legend>
+  </a>
 %else:
  <legend>Vse rezervacije</legend>
 %end
@@ -209,7 +261,7 @@ Reset</button-->
 %include ('termin.html', ime=ime, priimek=priimek, tel_st=tel_st,soba=soba,zacetek=zacetek,konec=konec)
 %end
 
-</table>
+</table> 
  
 <!-- navaden uporabnik vidi le svoje rezervacije -->
 %else:
@@ -235,8 +287,8 @@ Reset</button-->
   <td>{{konec}}</td>
 </tr>
 %end
-</table>
-%end
+</table> 
+%end 
 
 
 </div>

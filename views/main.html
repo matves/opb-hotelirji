@@ -111,9 +111,17 @@
 <h5>Izberite datum: </h5>
 	
 <div class="input-group" id="datepicker">
-    <input type="text" class="datepicker1" name="zacetek"  placeholder="dd.mm.yyyy" size="15" required=""/>
+    <input type="text" class="datepicker1" name="zacetek"  placeholder="dd.mm.yyyy" size="15" required=""
+	%if zacetek:
+	value="{{zacetek}}"
+	%end
+	/>
     <span class="input-group-addon">do</span>
-    <input type="text" class="datepicker2" name="konec"  placeholder="dd.mm.yyyy" size="15" required=""/>
+    <input type="text" class="datepicker2" name="konec"  placeholder="dd.mm.yyyy" size="15" required=""
+	%if konec:
+	value="{{konec}}"
+	%end
+	/>
 </div>
 
 <!--div class="checkbox">

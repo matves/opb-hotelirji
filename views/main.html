@@ -65,8 +65,6 @@
 	</div>
 	
 </div>
-%end
-
 
 <!-- Form Name -->
 <legend>Izberite: </legend>
@@ -118,7 +116,134 @@
 	
 <div class="input-group" id="datepicker">
     <input type="text" class="datepicker1" name="zacetek"  placeholder="dd.mm.yyyy" size="15" required=""
+    />
+    <span class="input-group-addon">do</span>
+    <input type="text" class="datepicker2" name="konec"  placeholder="dd.mm.yyyy" size="15" required=""
 	/>
+</div>
+
+<!--div class="checkbox">
+  <label>
+    <input type="checkbox" value="" name="zajtrk">
+    zajtrk
+  </label>
+</div>
+<div class="checkbox" >
+  <label>
+    <input type="checkbox" value="" name="dodatno_lezisce">
+    dodatno ležišče
+  </label>
+</div-->
+
+%if napaka: 
+	<div class="alert alert-warning">{{napaka}}</div>
+%end
+	
+<!-- Textarea -->
+<br>
+<form id="trac-forma" class="form-horizontal" method="post" type="submit" action=".">
+<div class="control-group">
+  <label class="control-label" for="singlebutton"></label>
+  <div class="controls">
+    <button type="submit" id="singlebutton" name="singlebutton" class="btn btn-primary" >Registracija gosta / Informativni izračun</button>
+  </div>
+</div><br>
+
+%if sporocilo_o_prijavi_gosta==1:
+<h4> Gosta ste uspešno registrirali <span class="label label-info"></span></h4>
+%elif sporocilo_o_prijavi_gosta==0:
+<h4> Gost je že registriran <span class="label label-info"></span></h4>
+<!--legend, font-size=15> Cena: {{cena}} &#8364</legend-->
+%end
+
+%if cena:
+<h4> Cena: <span class="label label-info"> {{cena}} &#8364 </span></h4>
+<!--legend, font-size=15> Cena: {{cena}} &#8364</legend-->
+%end
+
+<!--div class="control-group"-->
+  <!--div class="controls"-->
+  <div class="control-group">
+  <a name="Rezervirajte">
+	<a href="/{{soba_tip}}/{{kapaciteta}}/{{zacetek}}/{{konec}}/{{ime_gosta_1}}/{{priimek_gosta_1}}/{{tel_st_gosta_1}}/{{cena}}/rezerviraj_gostu_sobo/">Rezervirajte</a>
+  </a>
+  </div>
+    <!--button type="submit" id="singlebutton" name="singlebutton" class="btn btn-primary">Rezervirajte
+    
+    </button-->
+    <!--button type="reset" class="btn btn-default btn-sm">Reset</button-->
+  <!--/div-->
+<!--/div-->
+
+
+
+<!--form action="http://google.com">
+    <input type="submit" value="Go to Google">
+</form-->
+
+
+</fieldset>
+</form>
+</form>
+ </div>
+
+
+</div>
+%end
+
+<!--=====================================za gosta============ -->
+%if uporabnisko_ime != 'admin':
+<!-- Form Name -->
+<legend>Izberite: </legend>
+
+<!-- Buttons -->
+
+<div class="control-group">
+ 
+<div class="row">
+<!--p class="text-center">Tip sobe:</p-->
+ <div class="col-xs-8">
+    <label for="izbrana_soba">Tip sobe: </label>
+    <select class="form-control" name="izbrana_soba" id="izbrana_soba">
+    	<option value=" Standard" selected="">Standard</option>
+		<option value=" Nadstandard pogled na park">Nadstandard pogled na park</option>
+		<option value=" Nadstandard pogled na morje">Nadstandard pogled na morje</option>
+		<option value=" Deluxe pogled na park">Deluxe pogled na park</option>
+		<option value=" Deluxe pogled na morje">Deluxe pogled na morje</option>
+		%if soba_tip:
+		option value="{{soba_tip}}"
+		%end
+	</select>
+  </div>
+
+  <div class="col-xs-4">
+  <label for="stevilo_postelj">Št. postelj: </label>
+  <select class="form-control" name="stevilo_postelj" id="stevilo postelj">
+		<option value="2" selected="">2</option>
+		<option value="4">4</option>
+		%if kapaciteta:
+		option value="{{kapaciteta}}"
+		%end
+	</select>
+  </div>
+  <!--Za osebe je treba pol narest še if ... --->
+  <!--div class="col-xs-2">
+  <select class="form-control" name="stevilo_oseb">
+        <option value="1">1</option>
+		<option value="2" selected="">2</option>
+		<option value="3">3</option>
+		<option value="4">4</option>
+	</select>
+  </div-->
+</div>
+
+ 
+<!-- Date -->
+<h5>Izberite datum: </h5>
+	
+<div class="input-group" id="datepicker">
+    <input type="text" class="datepicker1" name="zacetek"  placeholder="dd.mm.yyyy" size="15" required=""
+    />
     <span class="input-group-addon">do</span>
     <input type="text" class="datepicker2" name="konec"  placeholder="dd.mm.yyyy" size="15" required=""
 	/>
@@ -156,21 +281,28 @@
 <!--legend, font-size=15> Cena: {{cena}} &#8364</legend-->
 %end
 
-
-
-
-<div class="control-group">
-  <div class="controls">
-    <button type="submit" id="singlebutton" name="singlebutton" class="btn btn-primary">Rezervirajte</button>
-    <button type="reset" class="btn btn-default btn-sm">Reset</button>
+<!--div class="control-group"-->
+  <!--div class="controls"-->
+  <div class="control-group">
+  <a name="Rezervirajte">
+	  
+	  %# TO FUNKCIJO JE TREBA ŠE POPRAVIT... JE TREBA IZBRISAT IME, PRIIMEK, TEL.ST. GOSTA 1, KI TU NE OBSTAJA
+	  
+	<a href="/{{soba_tip}}/{{kapaciteta}}/{{zacetek}}/{{konec}}/{{cena}}/rezerviraj_si_sobo/">Rezervirajte</a>
+  </a>
   </div>
-</div>
+    <!--button type="submit" id="singlebutton" name="singlebutton" class="btn btn-primary">Rezervirajte
+    
+    </button-->
+    <!--button type="reset" class="btn btn-default btn-sm">Reset</button-->
+  <!--/div-->
+<!--/div-->
 
 
 
-<form action="http://google.com">
+<!--form action="http://google.com">
     <input type="submit" value="Go to Google">
-</form>
+</form-->
 
 
 </fieldset>
@@ -180,6 +312,10 @@
 
 
 </div>
+%end
+
+
+
 
  <!--=====================================Desna stran dokumenta========================================================================-->
  <div id="right_col">

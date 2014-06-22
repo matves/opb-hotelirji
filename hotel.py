@@ -132,7 +132,7 @@ def informativni_izracun(zacetek, konec, postavka_soba):
             
     stvikend = cas_bivanja-stdelovni
     #print('delovni=',stdelovni,'vikend=',stvikend)
-    cena=postavka_soba*(stdelovni + stvikend*1.2)
+    cena=round(postavka_soba*(stdelovni + stvikend*1.2),2)
     return cena
 
 
@@ -171,10 +171,13 @@ def main():
 							sporocilo_o_prijavi_gosta=None,
 							zacetek=None,
 							konec=None,
+                                                        zacetek1=None,
+                                                        konec1=None,
 							ratio=round(len(st_rez())/60.,1),
 							ime_gosta_1=None,# Z 1 je označeno ime gosta, ki ga vnašamo na levi strani
 							priimek_gosta_1=None,
 							tel_st_gosta_1=None,
+                                                        potrdilo=None,
 							napaka1=None)
 	else:
 		termin = rezervacija(oid)
@@ -195,6 +198,9 @@ def main():
 							sporocilo_o_prijavi_gosta=None,
 							zacetek=None,
 							konec=None,
+                                                        zacetek1=None,
+                                                        konec1=None,
+                                                        potrdilo=None,
 							ratio=round(len(st_rez())/60.,1),
 							ime_gosta_1=None,
 							priimek_gosta_1=None,
@@ -330,7 +336,9 @@ def vnos_gosta_in_informativni_izracun():
 			if cur.fetchone()==None:#če ga ni ga vnesemo
 				cur.execute("INSERT INTO oseba (ime, priimek,tel_st) VALUES (%s,%s,%s)", [ime_gosta_1,priimek_gosta_1,tel_st_gosta_1])
 				sporocilo_o_prijavi_gosta=1   
-		#FUNKCIJA, KI IZ PREDPISANEGA FORMATA RAZBERE DATUM:		
+		#FUNKCIJA, KI IZ PREDPISANEGA FORMATA RAZBERE DATUM:
+		zacetek1=bottle.request.forms.zacetek
+		konec1=bottle.request.forms.konec
 		zacetek=datetime.strptime(bottle.request.forms.zacetek,'%d.%m.%Y').date()
 		konec=datetime.strptime(bottle.request.forms.konec,'%d.%m.%Y').date()
 		#še enkrat prikaz leve strani
@@ -347,6 +355,8 @@ def vnos_gosta_in_informativni_izracun():
 									oid=oid,
 									soba_tip=soba_tip,
 									kapaciteta=kapaciteta,
+                                                                        zacetek1=zacetek1,
+                                                                        konec1=konec1,
 									zacetek=zacetek,
 									konec=konec,
 									termin=termin,
@@ -358,6 +368,7 @@ def vnos_gosta_in_informativni_izracun():
 									tel_st_gosta=None,
 									ime_izpis=None,
 									priimek_izpis=None,
+                                                                        potrdilo=None,
 									ratio=round(len(st_rez())/60.,1),
 									ime_gosta_1=ime_gosta_1,
 									priimek_gosta_1=priimek_gosta_1,
@@ -380,12 +391,15 @@ def vnos_gosta_in_informativni_izracun():
 									kapaciteta=kapaciteta,
 									termin=termin,
 									zacetek=zacetek,
+                                                                        zacetek1=zacetek1,
 									konec=konec,
+                                                                        konec1=konec1,
 									napaka=None,
 									ime_gosta=None,
 									priimek_gosta=None,
 									tel_st_gosta=None,
 									ime_izpis=None,
+                                                                        potrdilo=None,
 									priimek_izpis=None,
 									ratio=round(len(st_rez())/60.,1),
 									ime_gosta_1=ime_gosta_1,
@@ -410,6 +424,7 @@ def vnos_gosta_in_informativni_izracun():
 									priimek_gosta=None,
 									tel_st_gosta=None,
 									napaka1="Nepravilen vnos.",
+                                                                        potrdilo=None,
 									ime_izpis=None,
 									priimek_izpis=None,
 									cena=None,
@@ -437,6 +452,7 @@ def vnos_gosta_in_informativni_izracun():
 									priimek_gosta=None,
 									tel_st_gosta=None,
 									napaka=None,
+                                                                        potrdilo=None,
 									ime_izpis=ime_gosta,
 									priimek_izpis=priimek_gosta,
 									cena=None,
@@ -478,8 +494,10 @@ def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek
 						sporocilo_o_prijavi_gosta=None,
 						kapaciteta=kapaciteta,
 						termin=rezervacija_admin(),
-						zacetek=zacetek,
+                                                zacetek=zacetek,
+                                                zacetek1=zacetek1,
 						konec=konec,
+                                                konec1=konec1,
 						rezervacija=None,	   
 						ime_gosta=None,
 						priimek_gosta=None,
@@ -491,6 +509,7 @@ def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek
 						priimek_gosta_1=priimek_gosta_1,
 						tel_st_gosta_1=tel_st_gosta_1,
 						napaka='Ta termin je žal zaseden. Prosimo, izberite drugi termin ali drugi tip sobe.',
+                                                potrdilo=None,
 						napaka1=None)
 	
 	# Če pa je izbrana soba prosta pa vnesemo rezervacijo v tabelo
@@ -507,6 +526,8 @@ def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek
 						termin=rezervacija_admin(),
 						zacetek=None,
 						konec=None,
+                                                zacetek1=None,
+                                                konec1=None,
 						rezervacija=None,
 						ime_gosta=None,
 						priimek_gosta=None,
@@ -518,6 +539,7 @@ def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek
 						priimek_gosta_1=None,
 						tel_st_gosta_1=None,
 						napaka=None,
+                                                potrdilo='Rezervacija je bila uspešno opravljena.',
 						napaka1=None)	   
 	cur.close ()
 	return bottle.redirect("/")
@@ -548,6 +570,8 @@ def rezervacija_sobe(soba_tip,kapaciteta,zacetek,konec,cena):
 						termin=rezervacija(oid),
 						zacetek=None,
 						konec=None,
+                                                zacetek1=None,
+                                                konec1=None,
 						rezervacija=None,	   
 						ime_gosta=None,
 						priimek_gosta=None,
@@ -559,6 +583,7 @@ def rezervacija_sobe(soba_tip,kapaciteta,zacetek,konec,cena):
 						priimek_gosta_1=None,
 						tel_st_gosta_1=None,
 						napaka='Ta termin je žal zaseden. Prosimo, izberite drugi termin ali drugi tip sobe.',
+                                                potrdilo=None,
 						napaka1=None)
 	
 	# Če pa je izbrana soba prosta pa vnesemo rezervacijo v tabelo
@@ -575,6 +600,8 @@ def rezervacija_sobe(soba_tip,kapaciteta,zacetek,konec,cena):
 						termin=rezervacija_admin(),
 						zacetek=None,
 						konec=None,
+                                                zacetek1=None,
+                                                konec1=None,
 						rezervacija=None,
 						ime_gosta=None,
 						priimek_gosta=None,
@@ -586,6 +613,7 @@ def rezervacija_sobe(soba_tip,kapaciteta,zacetek,konec,cena):
 						priimek_gosta_1=None,
 						tel_st_gosta_1=None,
 						napaka=None,
+                                                potrdilo='Rezervacija je bila uspešno opravljena. Pregled vseh svojih rezervacij najdete na desni strani.',
 						napaka1=None)	   
 	cur.close ()
 	return bottle.redirect("/")

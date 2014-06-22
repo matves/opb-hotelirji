@@ -2,6 +2,11 @@
 body {
   padding-top: 50px;
   padding-bottom: 20px;
+  background: url(presidential.jpg) no-repeat center center fixed; 
+ -webkit-background-size: cover;
+ -moz-background-size: cover;
+ -o-background-size: cover;
+ background-size: cover;
 }
 
 .fakebook {
@@ -57,4 +62,18 @@ textarea.komentar {
 
 .trac-cas {
   float: right;
+}
+
+.table-striped > tbody > tr:nth-child(odd) > td,
+.table-striped > tbody > tr:nth-child(odd) > th {
+background-color: #eee !important;
+}
+.table-striped > tbody > tr:nth-child(even) > td,
+.table-striped > tbody > tr:nth-child(even) > th {
+background-color: #fff  !important;
+}
+
+.table-hover > tbody > tr:hover > td,
+.table-hover > tbody > tr:hover > th {
+  background-color: #ffd64d !important;
 }

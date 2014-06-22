@@ -54,27 +54,52 @@
                     </div>
 					<div class="form-group">
                         <div class="col-sm-9">
-                            <input class="form-control" name="ime" required="" placeholder="Ime" type="text">
+                            <input class="form-control" name="ime" required="" placeholder="Ime" type="text"
+														%if ime:
+                            value="{{ime}}"
+                            %end
+                            name="ime"
+                            required="">
                         </div>
                     </div>
 					<div class="form-group">
                         <div class="col-sm-9">
-                            <input class="form-control" name="priimek" required="" placeholder="Priimek" type="text">
+                            <input class="form-control" name="priimek" required="" placeholder="Priimek" type="text"
+														%if priimek:
+                            value="{{priimek}}"
+                            %end
+                            name="priimek"
+                            required="" >
                         </div>
                     </div>
 					<div class="form-group">
                         <div class="col-sm-9">
-                            <input class="form-control" name="naslov" placeholder="Naslov" type="text">
+                            <input class="form-control" name="naslov" placeholder="Naslov" type="text"
+							%if naslov:
+                            value="{{naslov}}"
+                            %end
+                            name="naslov"
+                            >
                         </div>
                     </div>
 					<div class="form-group">
                         <div class="col-sm-9">
-                            <input class="form-control" name="email" placeholder="E-mail" type="email">
+                            <input class="form-control" name="email" placeholder="E-mail" type="email"
+							%if email:
+                            value="{{email}}"
+                            %end
+                            name="email"
+                            >
                         </div>
                     </div>
 					<div class="form-group">
                         <div class="col-sm-9">
-                            <input class="form-control" name="tel_st" placeholder="Telefonska številka" required="" type="tel">
+                            <input class="form-control" name="tel_st" placeholder="Telefonska številka" required="" type="tel"
+							%if tel_st:
+                            value="{{tel_st}}"
+                            %end
+                            name="tel_st"
+                            >
                         </div>
                     </div>
 					 <div class="form-group">

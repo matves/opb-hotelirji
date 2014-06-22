@@ -263,7 +263,10 @@ def register_get():
 						   uporabnisko_ime=None,
 						   ime=None,
 						   priimek=None,
-						   napaka=None)
+						   napaka=None,
+                                                   naslov=None,
+                                                   tel_st=None,
+                                                   email=None)
 
 
 @bottle.post("/register/")
@@ -293,6 +296,7 @@ def register_post():
 							   tel_st=tel_st,
 							   geslo1=geslo1,
 							   geslo2=geslo2,
+                                                           naslov=naslov,
 							   napaka='To uporabniško ime je že zasedeno.')
 	elif not geslo1 == geslo2:
 		# Gesli se ne ujemata, vrnemo vse prejšnje noter, da ni treba še enkrat pisat
@@ -302,6 +306,7 @@ def register_post():
 							   priimek=priimek,
 							   email=email,
 							   tel_st=tel_st,
+                                                           naslov=naslov,
 							   napaka='Gesli se ne ujemata.')
 	else:
 		# Vse je v redu, vstavi novega uporabnika v bazo

@@ -150,14 +150,17 @@
 </div><br>
 
 %if sporocilo_o_prijavi_gosta==1:
-<h4> Gosta ste uspešno registrirali <span class="label label-info"></span></h4>
+<div class="alert alert-success">Gosta ste uspešno registrirali.</div>
+<!--h4>  <span class="label label-info">Gosta ste uspešno registrirali</span></h4-->
 %elif sporocilo_o_prijavi_gosta==0:
-<h4> Gost je že registriran <span class="label label-info"></span></h4>
+<div class="alert alert-success">Gost je že registriran.</div>
+<!--h4>  <span class="label label-info">Gost je že registriran</span></h4-->
 <!--legend, font-size=15> Cena: {{cena}} &#8364</legend-->
 %end
 
 %if cena:
-<h4> Cena: <span class="label label-info"> {{cena}} &#8364 </span></h4>
+<!--h4> Cena: <span class="label label-info"> {{cena}} &#8364 </span></h4-->
+<div class="alert alert-info">Cena izbrane namestitve: <b>{{cena}} &#8364 </b></div>
 <!--legend, font-size=15> Cena: {{cena}} &#8364</legend-->
 %end
 
@@ -165,7 +168,7 @@
   <!--div class="controls"-->
   <div class="control-group">
   <a name="Rezervirajte">
-	<a href="/{{soba_tip}}/{{kapaciteta}}/{{zacetek}}/{{konec}}/{{ime_gosta_1}}/{{priimek_gosta_1}}/{{tel_st_gosta_1}}/{{cena}}/rezerviraj_gostu_sobo/">Rezervirajte</a>
+	<a href="/{{soba_tip}}/{{kapaciteta}}/{{zacetek}}/{{konec}}/{{ime_gosta_1}}/{{priimek_gosta_1}}/{{tel_st_gosta_1}}/{{cena}}/rezerviraj_gostu_sobo/" class="btn btn-primary">Rezervirajte</a>
   </a>
   </div>
     <!--button type="submit" id="singlebutton" name="singlebutton" class="btn btn-primary">Rezervirajte
@@ -288,7 +291,7 @@
 	  
 	  %# TO FUNKCIJO JE TREBA ŠE POPRAVIT... JE TREBA IZBRISAT IME, PRIIMEK, TEL.ST. GOSTA 1, KI TU NE OBSTAJA
 	  
-	<a href="/{{soba_tip}}/{{kapaciteta}}/{{zacetek}}/{{konec}}/{{cena}}/rezerviraj_si_sobo/">Rezervirajte</a>
+	<a href="/{{soba_tip}}/{{kapaciteta}}/{{zacetek}}/{{konec}}/{{cena}}/rezerviraj_si_sobo/" class="btn btn-primary">Rezervirajte</a>
   </a>
   </div>
     <!--button type="submit" id="singlebutton" name="singlebutton" class="btn btn-primary">Rezervirajte
@@ -386,11 +389,10 @@
 </div>
 
 %if ime_izpis:
- <legend>Rezervacije za osebo {{ime_izpis}} {{priimek_izpis}} &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
- &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
- <a href="/">
-  Vse rezervacije</legend>
-  </a>
+ <legend>Rezervacije za osebo {{ime_izpis}} {{priimek_izpis}} 
+ <a href="/" class="btn btn-primary btn-sm  pull-right">
+  Vse rezervacije
+  </a>  </legend>
 %else:
  <legend>Vse rezervacije</legend>
 %end

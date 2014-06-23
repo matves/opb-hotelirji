@@ -602,7 +602,7 @@ def rezervacija_sobe(soba_tip,kapaciteta,zacetek,konec,cena):
 	else:
 		cur.execute("INSERT INTO termin (soba, zacetek, konec, oseba, popust) VALUES (%s, %s, %s, %s, %s)",
 																				#(cur.fetchone()[0], zacetek, konec, oid, 0))
-																				(soba, zacetek, konec, oid_1, 0))
+																				(soba, zacetek, konec, oid, 0))
 		bottle.template("main.html",
 						uporabnisko_ime = uporabnisko_ime,
 						oid=oid,

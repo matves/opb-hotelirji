@@ -171,13 +171,13 @@ def main():
 							sporocilo_o_prijavi_gosta=None,
 							zacetek=None,
 							konec=None,
-                                                        zacetek1=None,
-                                                        konec1=None,
+							zacetek1=None,
+							konec1=None,
 							ratio=round(len(st_rez())/60.,1),
 							ime_gosta_1=None,# Z 1 je označeno ime gosta, ki ga vnašamo na levi strani
 							priimek_gosta_1=None,
 							tel_st_gosta_1=None,
-                                                        potrdilo=None,
+							potrdilo=None,
 							napaka1=None)
 	else:
 		termin = rezervacija(oid)
@@ -198,9 +198,9 @@ def main():
 							sporocilo_o_prijavi_gosta=None,
 							zacetek=None,
 							konec=None,
-                                                        zacetek1=None,
-                                                        konec1=None,
-                                                        potrdilo=None,
+							zacetek1=None,
+							konec1=None,
+							potrdilo=None,
 							ratio=round(len(st_rez())/60.,1),
 							ime_gosta_1=None,
 							priimek_gosta_1=None,
@@ -264,9 +264,9 @@ def register_get():
 						   ime=None,
 						   priimek=None,
 						   napaka=None,
-                                                   naslov=None,
-                                                   tel_st=None,
-                                                   email=None)
+						   naslov=None,
+						   tel_st=None,
+						   email=None)
 
 
 @bottle.post("/register/")
@@ -296,7 +296,7 @@ def register_post():
 							   tel_st=tel_st,
 							   geslo1=geslo1,
 							   geslo2=geslo2,
-                                                           naslov=naslov,
+							   naslov=naslov,
 							   napaka='To uporabniško ime je že zasedeno.')
 	elif not geslo1 == geslo2:
 		# Gesli se ne ujemata, vrnemo vse prejšnje noter, da ni treba še enkrat pisat
@@ -306,7 +306,7 @@ def register_post():
 							   priimek=priimek,
 							   email=email,
 							   tel_st=tel_st,
-                                                           naslov=naslov,
+							   naslov=naslov,
 							   napaka='Gesli se ne ujemata.')
 	else:
 		# Vse je v redu, vstavi novega uporabnika v bazo
@@ -360,8 +360,8 @@ def vnos_gosta_in_informativni_izracun():
 									oid=oid,
 									soba_tip=soba_tip,
 									kapaciteta=kapaciteta,
-                                                                        zacetek1=zacetek1,
-                                                                        konec1=konec1,
+									zacetek1=zacetek1,
+									konec1=konec1,
 									zacetek=zacetek,
 									konec=konec,
 									termin=termin,
@@ -373,7 +373,7 @@ def vnos_gosta_in_informativni_izracun():
 									tel_st_gosta=None,
 									ime_izpis=None,
 									priimek_izpis=None,
-                                                                        potrdilo=None,
+									potrdilo=None,
 									ratio=round(len(st_rez())/60.,1),
 									ime_gosta_1=ime_gosta_1,
 									priimek_gosta_1=priimek_gosta_1,
@@ -396,15 +396,15 @@ def vnos_gosta_in_informativni_izracun():
 									kapaciteta=kapaciteta,
 									termin=termin,
 									zacetek=zacetek,
-                                                                        zacetek1=zacetek1,
+									zacetek1=zacetek1,
 									konec=konec,
-                                                                        konec1=konec1,
+									konec1=konec1,
 									napaka=None,
 									ime_gosta=None,
 									priimek_gosta=None,
 									tel_st_gosta=None,
 									ime_izpis=None,
-                                                                        potrdilo=None,
+									potrdilo=None,
 									priimek_izpis=None,
 									ratio=round(len(st_rez())/60.,1),
 									ime_gosta_1=ime_gosta_1,
@@ -429,7 +429,7 @@ def vnos_gosta_in_informativni_izracun():
 									priimek_gosta=None,
 									tel_st_gosta=None,
 									napaka1="Nepravilen vnos.",
-                                                                        potrdilo=None,
+									potrdilo=None,
 									ime_izpis=None,
 									priimek_izpis=None,
 									cena=None,
@@ -442,7 +442,9 @@ def vnos_gosta_in_informativni_izracun():
 									ime_gosta_1=None,
 									priimek_gosta_1=None,
 									tel_st_gosta_1=None,
-									napaka=None)
+									napaka=None,
+									zacetek1=None,
+									konec1=None)
 		#gremo na osnovno stran, in vse v okencih pobrišemo
 		else:
 			cur.execute("SELECT oid FROM oseba WHERE ime = %s AND priimek = %s AND tel_st = %s", [ime_gosta, priimek_gosta, tel_st_gosta])
@@ -457,7 +459,7 @@ def vnos_gosta_in_informativni_izracun():
 									priimek_gosta=None,
 									tel_st_gosta=None,
 									napaka=None,
-                                                                        potrdilo=None,
+									potrdilo=None,
 									ime_izpis=ime_gosta,
 									priimek_izpis=priimek_gosta,
 									cena=None,
@@ -470,7 +472,9 @@ def vnos_gosta_in_informativni_izracun():
 									ime_gosta_1=None,
 									priimek_gosta_1=None,
 									tel_st_gosta_1=None,
-									napaka1=None)
+									napaka1=None,
+									zacetek1=None,
+									konec1=None)
 							   
 @bottle.route("/<soba_tip:path>/<kapaciteta:int>/<zacetek:path>/<konec:path>/<ime_gosta_1:path>/<priimek_gosta_1:path>/<tel_st_gosta_1:path>/<cena:path>/rezerviraj_gostu_sobo/")
 def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek_gosta_1,tel_st_gosta_1,cena):
@@ -490,7 +494,8 @@ def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek
 	[str(soba_tip),kapaciteta,str(soba_tip),kapaciteta,str(zacetek),str(zacetek),str(konec),str(konec)])
 	(soba,)=cur.fetchone()
 	## Če ne najde izbrane proste sobe, mu izpišemo, da ni ok:
-	if cur.fetchone() is None:  
+	#if cur.fetchone() is None:  
+	if soba is None:  
 		bottle.template("main.html",
 						uporabnisko_ime = uporabnisko_ime,
 						oid=oid,
@@ -499,10 +504,10 @@ def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek
 						sporocilo_o_prijavi_gosta=None,
 						kapaciteta=kapaciteta,
 						termin=rezervacija_admin(),
-                                                zacetek=zacetek,
-                                                zacetek1=zacetek1,
+						zacetek=zacetek,
+						zacetek1=zacetek1,
 						konec=konec,
-                                                konec1=konec1,
+						konec1=konec1,
 						rezervacija=None,	   
 						ime_gosta=None,
 						priimek_gosta=None,
@@ -514,13 +519,14 @@ def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek
 						priimek_gosta_1=priimek_gosta_1,
 						tel_st_gosta_1=tel_st_gosta_1,
 						napaka='Ta termin je žal zaseden. Prosimo, izberite drugi termin ali drugi tip sobe.',
-                                                potrdilo=None,
+						potrdilo=None,
 						napaka1=None)
 	
 	# Če pa je izbrana soba prosta pa vnesemo rezervacijo v tabelo
 	else:
 		cur.execute("INSERT INTO termin (soba, zacetek, konec, oseba, popust) VALUES (%s, %s, %s, %s, %s)",
-																				(cur.fetchone()[0], zacetek, konec, oid_1, 0))
+																				#(cur.fetchone()[0], zacetek, konec, oid_1, 0))
+																				(soba, zacetek, konec, oid_1, 0))
 		bottle.template("main.html",
 						uporabnisko_ime = uporabnisko_ime,
 						oid=oid,
@@ -531,8 +537,8 @@ def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek
 						termin=rezervacija_admin(),
 						zacetek=None,
 						konec=None,
-                                                zacetek1=None,
-                                                konec1=None,
+						zacetek1=None,
+						konec1=None,
 						rezervacija=None,
 						ime_gosta=None,
 						priimek_gosta=None,
@@ -544,7 +550,7 @@ def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek
 						priimek_gosta_1=None,
 						tel_st_gosta_1=None,
 						napaka=None,
-                                                potrdilo='Rezervacija je bila uspešno opravljena.',
+						potrdilo='Rezervacija je bila uspešno opravljena.',
 						napaka1=None)	   
 	cur.close ()
 	return bottle.redirect("/")
@@ -564,7 +570,8 @@ def rezervacija_sobe(soba_tip,kapaciteta,zacetek,konec,cena):
 	[str(soba_tip),kapaciteta,str(soba_tip),kapaciteta,str(zacetek),str(zacetek),str(konec),str(konec)])
 	(soba,)=cur.fetchone()
 	## Če ne najde izbrane proste sobe, mu izpišemo, da ni ok:
-	if cur.fetchone() is None:  
+	#if cur.fetchone() is None: 
+	if soba is None: 	
 		bottle.template("main.html",
 						uporabnisko_ime = uporabnisko_ime,
 						oid=oid,
@@ -575,8 +582,8 @@ def rezervacija_sobe(soba_tip,kapaciteta,zacetek,konec,cena):
 						termin=rezervacija(oid),
 						zacetek=None,
 						konec=None,
-                                                zacetek1=None,
-                                                konec1=None,
+						zacetek1=None,
+						konec1=None,
 						rezervacija=None,	   
 						ime_gosta=None,
 						priimek_gosta=None,
@@ -588,13 +595,14 @@ def rezervacija_sobe(soba_tip,kapaciteta,zacetek,konec,cena):
 						priimek_gosta_1=None,
 						tel_st_gosta_1=None,
 						napaka='Ta termin je žal zaseden. Prosimo, izberite drugi termin ali drugi tip sobe.',
-                                                potrdilo=None,
+						potrdilo=None,
 						napaka1=None)
 	
 	# Če pa je izbrana soba prosta pa vnesemo rezervacijo v tabelo
 	else:
 		cur.execute("INSERT INTO termin (soba, zacetek, konec, oseba, popust) VALUES (%s, %s, %s, %s, %s)",
-																				(cur.fetchone()[0], zacetek, konec, oid, 0))
+																				#(cur.fetchone()[0], zacetek, konec, oid, 0))
+																				(soba, zacetek, konec, oid_1, 0))
 		bottle.template("main.html",
 						uporabnisko_ime = uporabnisko_ime,
 						oid=oid,
@@ -605,8 +613,8 @@ def rezervacija_sobe(soba_tip,kapaciteta,zacetek,konec,cena):
 						termin=rezervacija_admin(),
 						zacetek=None,
 						konec=None,
-                                                zacetek1=None,
-                                                konec1=None,
+						zacetek1=None,
+						konec1=None,
 						rezervacija=None,
 						ime_gosta=None,
 						priimek_gosta=None,
@@ -618,7 +626,7 @@ def rezervacija_sobe(soba_tip,kapaciteta,zacetek,konec,cena):
 						priimek_gosta_1=None,
 						tel_st_gosta_1=None,
 						napaka=None,
-                                                potrdilo='Rezervacija je bila uspešno opravljena. Pregled vseh svojih rezervacij najdete na desni strani.',
+						potrdilo='Rezervacija je bila uspešno opravljena. Pregled vseh svojih rezervacij najdete na desni strani.',
 						napaka1=None)	   
 	cur.close ()
 	return bottle.redirect("/")
@@ -644,9 +652,9 @@ def rezervacija_delete(soba,zacetek,konec):
 
 # priklopimo se na bazo
 ### priklopimo se na bazo postgresql; vnesi svoje up.ime in geslo:
-#baza = psycopg2.connect(database='seminarska_tadejd', host='audrey.fmf.uni-lj.si', user='tadejd', password='stormymonday')
+baza = psycopg2.connect(database='seminarska_tadejd', host='audrey.fmf.uni-lj.si', user='tadejd', password='stormymonday')
 #baza = psycopg2.connect(database='seminarska_tilenb', host='audrey.fmf.uni-lj.si', user='tilenb', password='59q9yipw')
-baza = psycopg2.connect(database='seminarska_matejav', host='audrey.fmf.uni-lj.si', user='matejav', password='onceuponatime')
+#baza = psycopg2.connect(database='seminarska_matejav', host='audrey.fmf.uni-lj.si', user='matejav', password='onceuponatime')
 baza.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT) # onemogocimo transakcije
 
 # poženemo strežnik na portu 8080, glej http://localhost:8080/

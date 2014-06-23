@@ -492,7 +492,13 @@ def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek
 	((to_date(%s, 'YYYY-MM-DD') <= to_date(to_char(termin.konec, 'YYYY-MM-DD'), 'YYYY-MM-DD')) AND 
 	(to_date(%s, 'YYYY-MM-DD')> to_date(to_char(termin.zacetek, 'YYYY-MM-DD'), 'YYYY-MM-DD')))))""",
 	[str(soba_tip),kapaciteta,str(soba_tip),kapaciteta,str(zacetek),str(zacetek),str(konec),str(konec)])
-	(soba,)=cur.fetchone()
+	print ("cur.fetchone()", cur.fetchone())
+	tab_soba=cur.fetchone()
+	if tab_soba != None:
+		soba = tab_soba[0][0]
+	else:
+		soba = tab_soba
+	#(soba,)=cur.fetchone()
 	## Če ne najde izbrane proste sobe, mu izpišemo, da ni ok:
 	#if cur.fetchone() is None:  
 	if soba is None:  
@@ -505,9 +511,9 @@ def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek
 						kapaciteta=kapaciteta,
 						termin=rezervacija_admin(),
 						zacetek=zacetek,
-						zacetek1=zacetek1,
+						zacetek1=None,
 						konec=konec,
-						konec1=konec1,
+						konec1=None,
 						rezervacija=None,	   
 						ime_gosta=None,
 						priimek_gosta=None,
@@ -568,7 +574,12 @@ def rezervacija_sobe(soba_tip,kapaciteta,zacetek,konec,cena):
 	((to_date(%s, 'YYYY-MM-DD') <= to_date(to_char(termin.konec, 'YYYY-MM-DD'), 'YYYY-MM-DD')) AND 
 	(to_date(%s, 'YYYY-MM-DD')> to_date(to_char(termin.zacetek, 'YYYY-MM-DD'), 'YYYY-MM-DD')))))""",
 	[str(soba_tip),kapaciteta,str(soba_tip),kapaciteta,str(zacetek),str(zacetek),str(konec),str(konec)])
-	(soba,)=cur.fetchone()
+	print ("cur.fetchone()", cur.fetchone())
+	tab_soba=cur.fetchone()
+	if tab_soba != None:
+		soba = tab_soba[0][0]
+	else:
+		soba = tab_soba
 	## Če ne najde izbrane proste sobe, mu izpišemo, da ni ok:
 	#if cur.fetchone() is None: 
 	if soba is None: 	

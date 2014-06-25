@@ -286,8 +286,8 @@ def register_post():
 	cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
 	cur.execute("SELECT 1 FROM oseba WHERE uporabnisko_ime=%s", [uporabnisko_ime])
 	if cur.fetchone():
-		# Če dobimo takega userja: uporabnik že obstaja; pri nas nas zanima samo username, za ime nam je vseeno (nas ne briga, če bi se isti človek prijavil 2x
-		# pri 2 različnih rezervacijah
+		# Če dobimo takega userja: uporabnik že obstaja; pri nas nas zanima samo username, za ime nam je vseeno (nas ne briga,
+		#če bi se isti človek prijavil 2x pri 2 različnih rezervacijah
 		return bottle.template("register.html",
 							   uporabnisko_ime=uporabnisko_ime,
 							   ime=ime,
@@ -494,8 +494,10 @@ def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek
 	[str(soba_tip),kapaciteta,str(soba_tip),kapaciteta,str(zacetek),str(zacetek),str(konec),str(konec)])
 	print ("cur.fetchone()", cur.fetchone())
 	tab_soba=cur.fetchone()
+	print ('tab_soba: ',tab_soba)
+	print ('tab_soba[0]: ',tab_soba[0])
 	if tab_soba != None:
-		soba = tab_soba[0][0]
+		soba = tab_soba[0]
 	else:
 		soba = tab_soba
 	#(soba,)=cur.fetchone()
@@ -577,7 +579,7 @@ def rezervacija_sobe(soba_tip,kapaciteta,zacetek,konec,cena):
 	print ("cur.fetchone()", cur.fetchone())
 	tab_soba=cur.fetchone()
 	if tab_soba != None:
-		soba = tab_soba[0][0]
+		soba = tab_soba[0]
 	else:
 		soba = tab_soba
 	## Če ne najde izbrane proste sobe, mu izpišemo, da ni ok:
@@ -663,8 +665,8 @@ def rezervacija_delete(soba,zacetek,konec):
 
 # priklopimo se na bazo
 ### priklopimo se na bazo postgresql; vnesi svoje up.ime in geslo:
-baza = psycopg2.connect(database='seminarska_tadejd', host='audrey.fmf.uni-lj.si', user='tadejd', password='stormymonday')
-#baza = psycopg2.connect(database='seminarska_tilenb', host='audrey.fmf.uni-lj.si', user='tilenb', password='59q9yipw')
+#baza = psycopg2.connect(database='seminarska_tadejd', host='audrey.fmf.uni-lj.si', user='tadejd', password='stormymonday')
+baza = psycopg2.connect(database='seminarska_tilenb', host='audrey.fmf.uni-lj.si', user='tilenb', password='59q9yipw')
 #baza = psycopg2.connect(database='seminarska_matejav', host='audrey.fmf.uni-lj.si', user='matejav', password='onceuponatime')
 baza.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT) # onemogocimo transakcije
 

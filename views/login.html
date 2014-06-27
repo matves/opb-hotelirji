@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="si">
+<!--%rebase ('base.html', title='Hotel Prestige')-->
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -28,10 +29,41 @@
   </head>
 
   <body>
+  
+  <style type="text/css">
+
+  </style>
 
 <div class="container">
-    <div class="row">
-        <div class="col-md-4 col-md-offset-7">
+ <div class="row">
+
+        <div class="col-md-4">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                  <strong>Iz naše ponudbe:</strong>
+                </div>
+				
+                <div class="panel-body">
+				<div class="alert alert-info" role="alert">
+
+<center>{{rekkap}}-posteljna soba <br> <b>{{rektip.replace("pogled","s pogledom")}}</b> <br> že od <b>{{rekcena}} &#8364 </b> na noč </div></center>
+        </div>
+		
+%if 'Standard' in rektip:
+	<center><img src="/static/standard.jpg" style="max-width: 90%"></center>
+%elif 'Nadstandard' in rektip:
+	<center><img src="/static/superior.jpg" style="max-width: 90%"></center>
+%else:
+	<center><img src="/static/deluxe.jpg" style="max-width: 90%"></center>
+%end
+		
+		<div class="panel-footer"></div>
+		</div>
+		</div>
+		 
+
+	
+		<div class="col-md-4 col-md-offset-3">
             <div class="panel panel-default">
                 <div class="panel-heading">
                   <strong>Prijava</strong>
@@ -61,8 +93,6 @@
                         <div class="col-sm-offset-3 col-sm-9">
                             <button type="submit" class="btn btn-success btn-sm">
                                 Vstopi</button>
-                                 <!--button type="reset" class="btn btn-default btn-sm">
-                                Reset</button-->
                         </div>
                     </div>
                     </form>
@@ -70,12 +100,14 @@
                 <div class="panel-footer">
                     <a href="/register/">Registracija</a></div>
             </div>
+
+
         </div>
     </div>
+
 </div>
 
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
+
   </body>
+  
 </html>

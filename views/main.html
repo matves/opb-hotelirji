@@ -1,7 +1,6 @@
 %rebase ('base.html', title='Hotel Prestige')
 
 <link href="/static/css/bootstrap.min.css" rel="stylesheet">
-	<!--link href="/static/css/bootstrap.css" rel="stylesheet"-->
 
  <!-- Custom styles for this template -->
  <link href="/static/progress.css" rel="stylesheet">
@@ -74,41 +73,59 @@
 <div class="control-group">
  
 <div class="row">
-<!--p class="text-center">Tip sobe:</p-->
  <div class="col-xs-8">
     <label for="izbrana_soba">Tip sobe: </label>
     <select class="form-control" name="izbrana_soba" id="izbrana_soba">
     	<option value=" Standard" selected="">Standard</option>
-		<option value=" Nadstandard pogled na park">Nadstandard pogled na park</option>
-		<option value=" Nadstandard pogled na morje">Nadstandard pogled na morje</option>
-		<option value=" Deluxe pogled na park">Deluxe pogled na park</option>
-		<option value=" Deluxe pogled na morje">Deluxe pogled na morje</option>
-		%if soba_tip:
-		option value="{{soba_tip}}"
+		<option value=" Nadstandard pogled na park"
+		%if soba_tip==" Nadstandard pogled na park":
+		option selected=""
 		%end
+		>Nadstandard pogled na park</option>
+		<option value=" Nadstandard pogled na morje"
+		%if soba_tip==" Nadstandard pogled na morje":
+		option selected=""
+		%end
+		>Nadstandard pogled na morje</option>
+		<option value=" Deluxe pogled na park"
+		%if soba_tip==" Deluxe pogled na park":
+		option selected=""
+		%end
+		>Deluxe pogled na park</option>
+		<option value=" Deluxe pogled na morje"
+		%if soba_tip==" Deluxe pogled na morje":
+		option selected=""
+		%end
+		>Deluxe pogled na morje</option>	
 	</select>
   </div>
 
   <div class="col-xs-4">
-  <label for="stevilo_postelj">Št. postelj: </label>
+  <label for="stevilo_postelj">Št. oseb: </label>
   <select class="form-control" name="stevilo_postelj" id="stevilo postelj">
-		<option value="2" selected="">2</option>
-		<option value="4">4</option>
-		%if kapaciteta:
-		option value="{{kapaciteta}}"
+		<option value="1"
+		%if st_postelj=="1":
+		option selected=""
 		%end
+		>1</option>
+		<option value="2" 
+		%if (st_postelj=="2" or st_postelj is None):
+		option selected=""
+		%end
+		>2</option>
+		<option value="3"
+		%if st_postelj=="3":
+		option selected=""
+		%end
+		>3</option>
+		<option value="4"
+		%if st_postelj=="4":
+		option selected=""
+		%end
+		>4</option>
 	</select>
   </div>
-  <!--Za osebe je treba pol narest še if ... --->
-  <!--div class="col-xs-2">
-  <select class="form-control" name="stevilo_oseb">
-        <option value="1">1</option>
-		<option value="2" selected="">2</option>
-		<option value="3">3</option>
-		<option value="4">4</option>
-	</select>
-  </div-->
-</div>
+ </div>
 
  
 <!-- Date -->
@@ -127,19 +144,6 @@
 	/>
 </div>
 
-<!--div class="checkbox">
-  <label>
-    <input type="checkbox" value="" name="zajtrk">
-    zajtrk
-  </label>
-</div>
-<div class="checkbox" >
-  <label>
-    <input type="checkbox" value="" name="dodatno_lezisce">
-    dodatno ležišče
-  </label>
-</div-->
-
 %if napaka: 
 	<div class="alert alert-warning">{{napaka}}</div>
 %end
@@ -156,47 +160,28 @@
 
 %if sporocilo_o_prijavi_gosta==1:
 <div class="alert alert-success">Gosta ste uspešno registrirali.</div>
-<!--h4>  <span class="label label-info">Gosta ste uspešno registrirali</span></h4-->
 %elif sporocilo_o_prijavi_gosta==0:
 <div class="alert alert-success">Gost je že registriran.</div>
-<!--h4>  <span class="label label-info">Gost je že registriran</span></h4-->
-<!--legend, font-size=15> Cena: {{cena}} &#8364</legend-->
 %end
 
 %if cena:
-<!--h4> Cena: <span class="label label-info"> {{cena}} &#8364 </span></h4-->
 <div class="alert alert-info">Cena izbrane namestitve: <b>{{cena}} &#8364 </b></div>
-<!--legend, font-size=15> Cena: {{cena}} &#8364</legend-->
 %end
 
- %if potrdilo: 
-	<div class="alert alert-success">{{potrdilo}}</div>
+%if potrdilo:
+<div class="alert alert-success"> <b>{{potrdilo}} </b></div>
 %end
 
-<!--div class="control-group"-->
-  <!--div class="controls"-->
   <div class="control-group">
   <a name="Rezervirajte">
-	<a href="/{{soba_tip}}/{{kapaciteta}}/{{zacetek}}/{{konec}}/{{ime_gosta_1}}/{{priimek_gosta_1}}/{{tel_st_gosta_1}}/{{cena}}/rezerviraj_gostu_sobo/" class="btn btn-primary">Rezervirajte</a>
+	<a href="/{{soba_tip}}/{{kapaciteta}}/{{zacetek}}/{{konec}}/{{ime_gosta_1}}/{{priimek_gosta_1}}/{{tel_st_gosta_1}}/{{cena}}/{{st_postelj}}/rezerviraj_gostu_sobo/" class="btn btn-primary">Rezervirajte</a>
   </a>
   </div>
-  
-
-    <!--button type="submit" id="singlebutton" name="singlebutton" class="btn btn-primary">Rezervirajte
-    
-    </button-->
-    <!--button type="reset" class="btn btn-default btn-sm">Reset</button-->
-  <!--/div-->
-<!--/div-->
-
-
-
 
 </fieldset>
 </form>
 </form>
  </div>
-
 
 </div>
 %end
@@ -206,48 +191,63 @@
 <!-- Form Name -->
 <legend>Izberite: </legend>
 
-<!-- Buttons -->
-
 <div class="control-group">
  
 <div class="row">
-<!--p class="text-center">Tip sobe:</p-->
  <div class="col-xs-8">
     <label for="izbrana_soba">Tip sobe: </label>
     <select class="form-control" name="izbrana_soba" id="izbrana_soba">
     	<option value=" Standard" selected="">Standard</option>
-		<option value=" Nadstandard pogled na park">Nadstandard pogled na park</option>
-		<option value=" Nadstandard pogled na morje">Nadstandard pogled na morje</option>
-		<option value=" Deluxe pogled na park">Deluxe pogled na park</option>
-		<option value=" Deluxe pogled na morje">Deluxe pogled na morje</option>
-		%if soba_tip:
-		option value="{{soba_tip}}"
+		<option value=" Nadstandard pogled na park"
+		%if soba_tip==" Nadstandard pogled na park":
+		option selected=""
 		%end
+		>Nadstandard pogled na park</option>
+		<option value=" Nadstandard pogled na morje"
+		%if soba_tip==" Nadstandard pogled na morje":
+		option selected=""
+		%end
+		>Nadstandard pogled na morje</option>
+		<option value=" Deluxe pogled na park"
+		%if soba_tip==" Deluxe pogled na park":
+		option selected=""
+		%end
+		>Deluxe pogled na park</option>
+		<option value=" Deluxe pogled na morje"
+		%if soba_tip==" Deluxe pogled na morje":
+		option selected=""
+		%end
+		>Deluxe pogled na morje</option>
 	</select>
   </div>
 
   <div class="col-xs-4">
-  <label for="stevilo_postelj">Št. postelj: </label>
+  <label for="stevilo_postelj">Št. oseb: </label>
   <select class="form-control" name="stevilo_postelj" id="stevilo postelj">
-		<option value="2" selected="">2</option>
-		<option value="4">4</option>
-		%if kapaciteta:
-		option value="{{kapaciteta}}"
+		<option value="1"
+		%if st_postelj=="1":
+		option selected=""
 		%end
+		>1</option>
+		<option value="2" 
+		%if (st_postelj=="2" or st_postelj is None):
+		option selected=""
+		%end
+		>2</option>
+		<option value="3"
+		%if st_postelj=="3":
+		option selected=""
+		%end
+		>3</option>
+		<option value="4"
+		%if st_postelj=="4":
+		option selected=""
+		%end
+		>4</option>
 	</select>
   </div>
-  <!--Za osebe je treba pol narest še if ... --->
-  <!--div class="col-xs-2">
-  <select class="form-control" name="stevilo_oseb">
-        <option value="1">1</option>
-		<option value="2" selected="">2</option>
-		<option value="3">3</option>
-		<option value="4">4</option>
-	</select>
-  </div-->
-</div>
+ </div>
 
- 
 <!-- Date -->
 <h5>Izberite datum: </h5>
 	
@@ -259,24 +259,12 @@
 	/>
     <span class="input-group-addon">do</span>
     <input type="text" class="datepicker2" name="konec"  placeholder="dd.mm.yyyy" size="15" required=""
-		%if konec1:
+	%if konec1:
 	value="{{konec1}}"
 	%end
 	/>
 </div>
 
-<!--div class="checkbox">
-  <label>
-    <input type="checkbox" value="" name="zajtrk">
-    zajtrk
-  </label>
-</div>
-<div class="checkbox" >
-  <label>
-    <input type="checkbox" value="" name="dodatno_lezisce">
-    dodatno ležišče
-  </label>
-</div-->
 
 %if napaka: 
 	<div class="alert alert-warning">{{napaka}}</div>
@@ -293,36 +281,15 @@
 </div><br>
 
 %if cena:
-<!--h4> Cena: <span class="label label-info"> {{cena}} &#8364 </span></h4-->
 <div class="alert alert-info">Cena izbrane namestitve: <b>{{cena}} &#8364 </b></div>
-<!--legend, font-size=15> Cena: {{cena}} &#8364</legend-->
 %end
 
-<!--div class="control-group"-->
-  <!--div class="controls"-->
-  
-%if potrdilo: 
-	<div class="alert alert-success">{{potrdilo}}</div>
-%end
-  
   <div class="control-group">
   <a name="Rezervirajte">
-	  
-	  %# TO FUNKCIJO JE TREBA ŠE POPRAVIT... JE TREBA IZBRISAT IME, PRIIMEK, TEL.ST. GOSTA 1, KI TU NE OBSTAJA
-	  
-	<a href="/{{soba_tip}}/{{kapaciteta}}/{{zacetek}}/{{konec}}/{{cena}}/rezerviraj_si_sobo/" class="btn btn-primary">Rezervirajte</a>
+	  	  
+	<a href="/{{soba_tip}}/{{kapaciteta}}/{{zacetek}}/{{konec}}/{{cena}}/{{st_postelj}}/rezerviraj_si_sobo/" class="btn btn-primary">Rezervirajte</a>
   </a>
   </div>
-  
-
-    <!--button type="submit" id="singlebutton" name="singlebutton" class="btn btn-primary">Rezervirajte
-    
-    </button-->
-    <!--button type="reset" class="btn btn-default btn-sm">Reset</button-->
-  <!--/div-->
-<!--/div-->
-
-
 
 </fieldset>
 </form>
@@ -397,8 +364,6 @@
 		<div class="col-sm-offset-3 col-sm-9">
 			<button type="submit" class="btn btn-success btn-sm">
 				Poglej rezervacije</button>
-				 <!--button type="reset" class="btn btn-default btn-sm">
-				Reset</button-->
 		</div>
 	</div>
 	</form>
@@ -412,7 +377,7 @@
 %else:
  <legend>Vse rezervacije</legend>
 %end
- <table style="width:800px" class="table table-striped table-condensed table-hover">
+ <table style="width:800px">
 <tr>
   <th>Ime</th>
   <th>Priimek</th>
@@ -432,9 +397,9 @@
 %else:
  <legend>Moje rezervacije</legend>
 
- <table style="width:800px" class="table table-striped">
+ <table style="width:800px">
 <tr>
-  <th>Številka sobe</th>
+  <th>Številka soba</th>
   <th>Tip</th>
   <th>Kapaciteta</th>
   <th>Dan prihoda</th>

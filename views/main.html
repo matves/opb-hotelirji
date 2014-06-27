@@ -166,6 +166,8 @@
 
 %if cena:
 <div class="alert alert-info">Cena izbrane namestitve: <b>{{cena}} &#8364 </b></div>
+%if sporocilo_o_prijavi_gosta==2:
+<div class="alert alert-warning">Za izvedbo rezervacije vpišite podatke gosta.</div>
 %end
 
 %if potrdilo:

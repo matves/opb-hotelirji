@@ -127,6 +127,8 @@ def st_rez():
 def informativni_izracun(zacetek, konec, postavka_soba, st_postelj):
     """Izračuna ceno, ki jo bo moral gost plačati, če najame sobo - glede na sobo in čas, cena za nočitev vikend je 1.2*nočitev teden"""
     cas_bivanja=(konec-zacetek).days
+   # leto=datetime.date.today().year
+   # prazniki=(datetime.date(leto,1,1), datetime.date(leto,2,8),datetime.date(leto,4,27))
 
     # Definiramo imena dni tako kot jih ima funkcija date.weekday(): Monday is 0 and Sunday is 6
     (PON,TOR,SRE,CET,PET,SOB,NED) = range(7)
@@ -135,16 +137,16 @@ def informativni_izracun(zacetek, konec, postavka_soba, st_postelj):
     # Pogledamo, koliko je to tednov in koliko dni ostane
     tedni, doddnevi = divmod(cas_bivanja, 7)
     stdelovni = (tedni + 1) * len(delovni)
-        # Odštejemo delovne dni, ki bi prišli v preostali teden (odštevamo od 8 zaradi funkcije range)
-        # Konec-1 zato, ker se šteje zadnja nočitev
+        # Odštejemo delovne dni, ki bi prišli v preostali teden (odštevamo od 8 zaradi funkcije range); Konec-1 zato, ker se šteje zadnja nočitev
     for d in range(1, 8 - doddnevi):
             if (konec + timedelta(d - 1 )).weekday() in delovni:
                     stdelovni -= 1
 
     stvikend = cas_bivanja-stdelovni
-    #print('delovni=',stdelovni,'vikend=',stvikend)
+
     cena=round(postavka_soba*(stdelovni + stvikend*1.2),2)
     cena=postavka_soba*(stdelovni + stvikend*1.2)
+
     # Če niso polno zasedene sobe:
     if st_postelj=="1":
             cena=cena*0.7
@@ -152,6 +154,7 @@ def informativni_izracun(zacetek, konec, postavka_soba, st_postelj):
             cena=cena*0.85
     else:
             cena=cena
+
     return round(cena,2)
 
 ##########################################################################################################
@@ -374,11 +377,17 @@ def vnos_gosta_in_informativni_izracun():
     if len(ime_gosta)==0:#ce smo na levi
         # Če gosta še ni v tabeli oseb, ga vnesemo
         if uporabnisko_ime == 'admin':
-            cur = baza.cursor()
-            cur.execute("""SELECT 1 FROM oseba WHERE ime = %s AND priimek = %s AND tel_st=%s""", [ime_gosta_1,priimek_gosta_1,tel_st_gosta_1])
-            if cur.fetchone()==None:#če ga ni ga vnesemo
-                cur.execute("INSERT INTO oseba (ime, priimek,tel_st) VALUES (%s,%s,%s)", [ime_gosta_1,priimek_gosta_1,tel_st_gosta_1])
-                sporocilo_o_prijavi_gosta=1
+            if len(ime_gosta_1)!=0:  #Če vnesemo nekaj pod podatke gosta
+                cur = baza.cursor()
+                cur.execute("""SELECT 1 FROM oseba WHERE ime = %s AND priimek = %s AND tel_st=%s""", [ime_gosta_1,priimek_gosta_1,tel_st_gosta_1])
+                if cur.fetchone()==None:#če ga ni ga vnesemo
+                    cur.execute("INSERT INTO oseba (ime, priimek,tel_st) VALUES (%s,%s,%s)", [ime_gosta_1,priimek_gosta_1,tel_st_gosta_1])
+                    sporocilo_o_prijavi_gosta=1
+                else:
+                    sporocilo_o_prijavi_gosta=0
+            else:
+                sporocilo_o_prijavi_gosta=2
+                
         #FUNKCIJA, KI IZ PREDPISANEGA FORMATA RAZBERE DATUM:
         zacetek1=bottle.request.forms.zacetek
         konec1=bottle.request.forms.konec
@@ -518,8 +527,8 @@ def vnos_gosta_in_informativni_izracun():
                                     zacetek1=None,
                                     konec1=None)
 
-@bottle.route("/<soba_tip:path>/<kapaciteta:int>/<zacetek:path>/<konec:path>/<ime_gosta_1:path>/<priimek_gosta_1:path>/<tel_st_gosta_1:path>/<cena:path>/rezerviraj_gostu_sobo/")
-def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek_gosta_1,tel_st_gosta_1,cena):
+@bottle.route("/<soba_tip:path>/<kapaciteta:int>/<zacetek:path>/<konec:path>/<ime_gosta_1:path>/<priimek_gosta_1:path>/<tel_st_gosta_1:path>/<cena:path>/<st_postelj:path>/rezerviraj_gostu_sobo/")
+def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek_gosta_1,tel_st_gosta_1,cena,st_postelj):
     """Preveri, če je izbrana soba prosta in jo rezervira"""
     (uporabnisko_ime, ime, oid) = get_user()
     napaka=0
@@ -556,7 +565,7 @@ def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek
                         cena=cena,
                         sporocilo_o_prijavi_gosta=None,
                         kapaciteta=kapaciteta,
-                        st_postelj=None,
+                        st_postelj=st_postelj,
                         termin=rezervacija_admin(),
                         zacetek=zacetek,
                         zacetek1=None,

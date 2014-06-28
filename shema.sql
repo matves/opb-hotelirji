@@ -44,6 +44,5 @@ LEFT JOIN
 (SELECT oseba, zacetek, generate_series(zacetek::date, (konec-1)::date, '1 day') as serija FROM termin days) as dnevi
 ON termin.zacetek=dnevi.zacetek AND termin.oseba=dnevi.oseba
 WHERE extract('dow' from serija) not in (5,6)
-GROUP BY oseba.oid,oseba.ime,oseba.priimek, oseba.tel_st,termin.soba, soba.kapaciteta, soba.tip,soba.cena,termin.zacetek,termin.popust, termin.konec
-ORDER BY termin.zacetek;
+GROUP BY oseba.oid,oseba.ime,oseba.priimek, oseba.tel_st,termin.soba, soba.kapaciteta, soba.tip,soba.cena,termin.zacetek,termin.popust, termin.konec;
 

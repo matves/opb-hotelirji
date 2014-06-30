@@ -238,7 +238,7 @@ def login_post():
     geslo = bottle.request.forms.geslo
     # Izračunamo MD5 hash gesla, ki ga bomo spravili
     geslo = password_md5(bottle.request.forms.geslo)
-    ##geslo = hashlib.md5(bottle.request.forms.geslo).hexdigest()
+    (rekkap, rektip, rekcena)=reklama_login()
 
     # Preverimo, ali se je uporabnik pravilno prijavil: daj mi tega, ki ima ta username in password
     cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -246,18 +246,20 @@ def login_post():
     #mi da prvi rezultat, če je to none, se ni prijavil pravilno
     if cur.fetchone() is None:
         # Username in geslo se ne ujemata
-        print("Username in geslo se ne ujemata.",uporabnisko_ime,geslo)
         return bottle.template("login.html",
-                               napaka="Nepravilna prijava",
-                               uporabnisko_ime=uporabnisko_ime)
+                               napaka="Nepravilna prijava.",
+                               uporabnisko_ime=uporabnisko_ime,
+                               rekkap=rekkap,
+                               rektip=rektip,
+                               rekcena=rekcena)
           #username mu vpišemo nazaj, gesla mu seveda ne bomo nazaj poslali
     else:
         # Vse je v redu, nastavimo cookie in preusmerimo na glavno stran
-        print(uporabnisko_ime, geslo)
         ##cookie: ime cookieja, ime vrednosti, kje je veljaven, kako je zakodiran (nekaj naključnega)
         bottle.response.set_cookie('uporabnisko_ime', uporabnisko_ime, path='/', secret=secret)
         bottle.redirect("/")
         ##pošljemo ga na glavno stran in če bo rpavilno delovala, bo vidla njegov cookie
+    cur.close()
 
 
 #### =====logout====================

@@ -50,7 +50,7 @@ def rezervacija_admin():
     """
     c = baza.cursor()
     c.execute(
-    """SELECT ime, priimek, tel_st, soba, zacetek, konec, znesek  FROM pregled_rezervacij
+    """SELECT ime, priimek, tel_st, soba, zacetek, konec, znesek  FROM pregled_rezervacij ORDER BY zacetek
     """)
     # Rezultat predelamo v nabor.
     termin = tuple(c)
@@ -65,7 +65,7 @@ def rezervacija(oid):
     """
     c = baza.cursor()
     c.execute(
-    """SELECT soba, tip, kapaciteta, zacetek, konec, znesek FROM pregled_rezervacij WHERE  oid = %s AND konec >= now()
+    """SELECT soba, tip, kapaciteta, zacetek, konec, znesek FROM pregled_rezervacij WHERE  oid = %s AND konec >= now() ORDER BY zacetek
     """, [oid])
     # Rezultat predelamo v nabor.
     termin = tuple(c)
@@ -81,7 +81,7 @@ def rezervacija_1(oid):#
     c = baza.cursor()
     c.execute(
     """SELECT ime, priimek, tel_st, soba, zacetek, konec, znesek
-       FROM pregled_rezervacij WHERE oid = %s
+       FROM pregled_rezervacij WHERE oid = %s ORDER BY zacetek
     """, [oid])
     # Rezultat predelamo v nabor.
     termin = tuple(c)

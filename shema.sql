@@ -41,8 +41,8 @@ round((soba.cena*(count(dnevi.serija))+1.2*soba.cena*(termin.konec-termin.zacete
 FROM oseba LEFT JOIN termin ON termin.oseba=oseba.oid 
 JOIN soba ON termin.soba=soba.sid
 LEFT JOIN 
-(SELECT oseba, zacetek, generate_series(zacetek::date, (konec-1)::date, '1 day') as serija FROM termin days) as dnevi
-ON termin.zacetek=dnevi.zacetek AND termin.oseba=dnevi.oseba
+(SELECT soba, zacetek, konec, generate_series(zacetek::date, (konec-1)::date, '1 day') as serija FROM termin days) as dnevi
+ON termin.zacetek=dnevi.zacetek AND termin.soba=dnevi.soba AND termin.konec=dnevi.konec
 WHERE extract('dow' from serija) not in (5,6)
-GROUP BY oseba.oid,oseba.ime,oseba.priimek, oseba.tel_st,termin.soba, soba.kapaciteta, soba.tip,soba.cena,termin.zacetek,termin.popust, termin.konec;
+GROUP BY termin.soba, termin.zacetek, termin.konec, oseba.oid,oseba.ime,oseba.priimek, oseba.tel_st, soba.kapaciteta, soba.tip,soba.cena,termin.popust;
 

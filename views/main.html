@@ -176,7 +176,11 @@
 
   <div class="control-group">
   <a name="Rezervirajte">
-	<a href="/{{soba_tip}}/{{kapaciteta}}/{{zacetek}}/{{konec}}/{{ime_gosta_1}}/{{priimek_gosta_1}}/{{tel_st_gosta_1}}/{{cena}}/{{st_postelj}}/rezerviraj_gostu_sobo/" class="btn btn-primary">Rezervirajte</a>
+	<a href="/{{soba_tip}}/{{kapaciteta}}/{{zacetek}}/{{konec}}/{{ime_gosta_1}}/{{priimek_gosta_1}}/{{tel_st_gosta_1}}/{{cena}}/{{st_postelj}}/rezerviraj_gostu_sobo/" class="btn btn-primary"
+	%if cena is None:
+	disabled
+	%end	
+	>Rezervirajte</a>
   </a>
   </div>
 
@@ -292,7 +296,11 @@
 
   <div class="control-group">
   <a name="Rezervirajte">  
-	<a href="/{{soba_tip}}/{{kapaciteta}}/{{zacetek}}/{{konec}}/{{cena}}/{{st_postelj}}/rezerviraj_si_sobo/" class="btn btn-primary">Rezervirajte</a>
+	<a href="/{{soba_tip}}/{{kapaciteta}}/{{zacetek}}/{{konec}}/{{cena}}/{{st_postelj}}/rezerviraj_si_sobo/" class="btn btn-primary"
+	%if cena is None:
+	disabled
+	%end	
+	>Rezervirajte</a>
   </a>
   </div>
   

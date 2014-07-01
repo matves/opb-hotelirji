@@ -12,7 +12,7 @@ Projekt pri predmetu Osnove podatkovnih baz
 * `views` -- predloge za spletne strani 
 * `static` -- statične spletne strani in datoteke ([Bootstrap](http://getbootstrap.com/))
 * `oseba.csv`, `soba.csv`, `termini.csv`  -- podatki za začetno polnitev baze
-* `uvoz` -- program za uvoz podatkov v podatkovno bazo na strežniku
+* `uvoz.py` -- program za uvoz podatkov v podatkovno bazo na strežniku
 
 ## Namestitev:
-Med bazami odkomentiramo pravo in poženemo dokument `hoteli.py`.
+Med bazami odkomentiramo pravo in poženemo dokument `hotel.py`.

@@ -44,27 +44,28 @@ def reklama_login():
     rekcena=reklamacena[jj][2]
     return (rekkap, rektip, rekcena)
 
+
 def rezervacija_admin():
     """Vrne vse rezervacije, ki so trenutno na bazi---ta vpogled bo imel administrator. To je osnovna verzija, ki prikaže le številko sobe, ter začetek in konec rezervacije
     """
     c = baza.cursor()
     c.execute(
-    """SELECT ime, priimek, tel_st, soba, zacetek, konec
-       FROM oseba JOIN termin ON oseba.oid = termin.oseba
+    """SELECT ime, priimek, tel_st, soba, zacetek, konec, znesek  FROM pregled_rezervacij ORDER BY zacetek
     """)
     # Rezultat predelamo v nabor.
     termin = tuple(c)
     c.close()
     # Vrnemo nabor, kot je opisano v dokumentaciji funkcije:
-    return ((ime, priimek, tel_st, soba, zacetek, konec)
-            for (ime, priimek, tel_st, soba, zacetek, konec) in termin)
+    return ((ime, priimek, tel_st, soba, zacetek, konec, cena)
+            for (ime, priimek, tel_st, soba, zacetek, konec, cena) in termin)
+
 
 def rezervacija(oid):
     """Vrne rezervacije navadnega uporabnika.
     """
     c = baza.cursor()
     c.execute(
-    """SELECT sid, tip, kapaciteta, zacetek, konec, cena FROM soba JOIN termin ON termin.soba = soba.sid WHERE  termin.oseba = %s AND konec >= now()
+    """SELECT soba, tip, kapaciteta, zacetek, konec, znesek FROM pregled_rezervacij WHERE  oid = %s AND konec >= now() ORDER BY zacetek
     """, [oid])
     # Rezultat predelamo v nabor.
     termin = tuple(c)
@@ -79,15 +80,15 @@ def rezervacija_1(oid):#
     """
     c = baza.cursor()
     c.execute(
-    """SELECT ime, priimek, tel_st, soba, zacetek, konec
-       FROM oseba JOIN termin ON oseba.oid = termin.oseba WHERE termin.oseba = %s
+    """SELECT ime, priimek, tel_st, soba, zacetek, konec, znesek
+       FROM pregled_rezervacij WHERE oid = %s ORDER BY zacetek
     """, [oid])
     # Rezultat predelamo v nabor.
     termin = tuple(c)
     c.close()
     # Vrnemo nabor, kot je opisano v dokumentaciji funkcije:
-    return ((sid, tip, kapaciteta, zacetek, konec, cena)
-            for (sid, tip, kapaciteta, zacetek, konec, cena) in termin)
+    return ((ime, priimek, tel_st, soba, zacetek, konec, cena)
+            for (ime, priimek, tel_st, soba, zacetek, konec, cena) in termin)
 
 
 def get_user(auto_login = True):
@@ -124,38 +125,18 @@ def st_rez():
     return st
 
 
-def informativni_izracun(zacetek, konec, postavka_soba, st_postelj):
+def informativni_izracun(zacetek, konec, postavka_soba, popust):
     """Izračuna ceno, ki jo bo moral gost plačati, če najame sobo - glede na sobo in čas, cena za nočitev vikend je 1.2*nočitev teden"""
-    cas_bivanja=(konec-zacetek).days
-   # leto=datetime.date.today().year
-   # prazniki=(datetime.date(leto,1,1), datetime.date(leto,2,8),datetime.date(leto,4,27))
-
-    # Definiramo imena dni tako kot jih ima funkcija date.weekday(): Monday is 0 and Sunday is 6
-    (PON,TOR,SRE,CET,PET,SOB,NED) = range(7)
-    # Mi v resnici gledamo nočitve, zato je nedelja pod delovnimi in petek ni
-    delovni=(NED,PON,TOR,SRE,CET)
-    # Pogledamo, koliko je to tednov in koliko dni ostane
-    tedni, doddnevi = divmod(cas_bivanja, 7)
-    stdelovni = (tedni + 1) * len(delovni)
-        # Odštejemo delovne dni, ki bi prišli v preostali teden (odštevamo od 8 zaradi funkcije range); Konec-1 zato, ker se šteje zadnja nočitev
-    for d in range(1, 8 - doddnevi):
-            if (konec + timedelta(d - 1 )).weekday() in delovni:
-                    stdelovni -= 1
-
-    stvikend = cas_bivanja-stdelovni
-
-    cena=round(postavka_soba*(stdelovni + stvikend*1.2),2)
-    cena=postavka_soba*(stdelovni + stvikend*1.2)
-
-    # Če niso polno zasedene sobe:
-    if st_postelj=="1":
-            cena=cena*0.7
-    elif st_postelj=="3":
-            cena=cena*0.85
-    else:
-            cena=cena
-
-    return round(cena,2)
+    ##count dnevi prešteje tiste, ki niso vikend
+    cur = baza.cursor()
+    cur.execute("""SELECT (%s*(count(dnevi))+1.2*%s*(to_date(%s,'YYYY-MM-DD')-to_date(%s,'YYYY-MM-DD')-count(dnevi)))*(100-%s)*1./100. 
+    FROM (SELECT generate_series(to_date(%s,'YYYY-MM-DD'), to_date(%s,'YYYY-MM-DD')-1, '1 day')  as dnevi) days
+    WHERE extract('dow' from dnevi) not in (5,6)""",[postavka_soba, postavka_soba, str(konec),str(zacetek),popust,str(zacetek),str(konec)])
+    ##print(round(tuple(cur)[0][0],2))
+    cena=(round(tuple(cur)[0][0],2))
+    cur.close()
+    
+    return cena
 
 ##########################################################################################################
 # Funkcije, ki obdelajo zahteve odjemalcev.
@@ -175,10 +156,7 @@ def main():
     #Seznam vseh sob v bazi
     if uporabnisko_ime == 'admin':
         termin = rezervacija_admin()
-##        if potrdilo is None:
-##            potrdilo = 0     #sicer pa se mu pripiše vrednost iz vrnjene funkcije
-##        if napaka is None:
-##            napaka = 0
+
         return bottle.template("main.html",
                             uporabnisko_ime = uporabnisko_ime,
                             oid=oid,
@@ -257,7 +235,7 @@ def login_post():
     geslo = bottle.request.forms.geslo
     # Izračunamo MD5 hash gesla, ki ga bomo spravili
     geslo = password_md5(bottle.request.forms.geslo)
-    ##geslo = hashlib.md5(bottle.request.forms.geslo).hexdigest()
+    (rekkap, rektip, rekcena)=reklama_login()
 
     # Preverimo, ali se je uporabnik pravilno prijavil: daj mi tega, ki ima ta username in password
     cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -265,18 +243,20 @@ def login_post():
     #mi da prvi rezultat, če je to none, se ni prijavil pravilno
     if cur.fetchone() is None:
         # Username in geslo se ne ujemata
-        print("Username in geslo se ne ujemata.",uporabnisko_ime,geslo)
         return bottle.template("login.html",
-                               napaka="Nepravilna prijava",
-                               uporabnisko_ime=uporabnisko_ime)
+                               napaka="Nepravilna prijava.",
+                               uporabnisko_ime=uporabnisko_ime,
+                               rekkap=rekkap,
+                               rektip=rektip,
+                               rekcena=rekcena)
           #username mu vpišemo nazaj, gesla mu seveda ne bomo nazaj poslali
     else:
         # Vse je v redu, nastavimo cookie in preusmerimo na glavno stran
-        print(uporabnisko_ime, geslo)
         ##cookie: ime cookieja, ime vrednosti, kje je veljaven, kako je zakodiran (nekaj naključnega)
         bottle.response.set_cookie('uporabnisko_ime', uporabnisko_ime, path='/', secret=secret)
         bottle.redirect("/")
         ##pošljemo ga na glavno stran in če bo rpavilno delovala, bo vidla njegov cookie
+    cur.close()
 
 
 #### =====logout====================
@@ -365,7 +345,7 @@ def vnos_gosta_in_informativni_izracun():
     tel_st_gosta_1 = bottle.request.forms.tel_st_gosta_1
     sporocilo_o_prijavi_gosta=0
 
-    print('postelj: ',st_postelj,type(st_postelj))
+    print('postelj: ',st_postelj)
     if (st_postelj=="1"):
         kapaciteta=2
     elif (st_postelj=="3"):
@@ -374,7 +354,16 @@ def vnos_gosta_in_informativni_izracun():
         kapaciteta=st_postelj
     print('kap:',kapaciteta)
 
-    if len(ime_gosta)==0:#ce smo na levi
+    # Če niso polno zasedene sobe:
+    if st_postelj=="1":
+        popust=30
+    elif st_postelj=="3":
+        popust=15
+    else:
+        popust=0
+
+    """==========================Če smo na levi strani dokumenta==============================================="""
+    if len(ime_gosta)==0:
         # Če gosta še ni v tabeli oseb, ga vnesemo
         if uporabnisko_ime == 'admin':
             if len(ime_gosta_1)!=0:  #Če vnesemo nekaj pod podatke gosta
@@ -399,7 +388,7 @@ def vnos_gosta_in_informativni_izracun():
         else:
             termin = rezervacija(oid)
 
-        print (soba_tip, kapaciteta,zacetek, konec)
+        print (soba_tip, kapaciteta, zacetek, konec)
 
         if (zacetek < datetime.today().date() or konec <= zacetek):
             return bottle.template("main.html",
@@ -413,6 +402,7 @@ def vnos_gosta_in_informativni_izracun():
                                     zacetek=zacetek,
                                     konec=konec,
                                     termin=termin,
+                                    popust=popust,
                                     napaka="Prosimo, vnesite veljaven datum.",
                                     cena=None,
                                     sporocilo_o_prijavi_gosta=sporocilo_o_prijavi_gosta,
@@ -434,36 +424,71 @@ def vnos_gosta_in_informativni_izracun():
             cur.execute("SELECT cena FROM soba WHERE tip=%s AND kapaciteta=%s", [str(soba_tip),kapaciteta])
             postavka_soba=float(tuple(cur)[0][0])
             cur.close ()
-            cena = informativni_izracun(zacetek, konec, postavka_soba, st_postelj)
+            cena = informativni_izracun(zacetek, konec, postavka_soba, popust)
+            print('cena=',cena)
+
+            #Poiščemo v bazi izbrano prosto sobo
+            cur = baza.cursor()
+            cur.execute("""SELECT sid FROM soba LEFT JOIN termin ON soba.sid=termin.soba WHERE soba.tip=%s AND soba.kapaciteta=%s AND sid NOT IN
+            (SELECT sid FROM soba LEFT JOIN termin ON soba.sid=termin.soba WHERE soba.tip=%s AND soba.kapaciteta=%s AND
+            (((to_date(%s, 'YYYY-MM-DD') < to_date(to_char(termin.konec, 'YYYY-MM-DD'), 'YYYY-MM-DD')) AND
+             (to_date(%s, 'YYYY-MM-DD')>= to_date(to_char(termin.zacetek, 'YYYY-MM-DD'), 'YYYY-MM-DD'))) OR
+             ((to_date(%s, 'YYYY-MM-DD') <= to_date(to_char(termin.konec, 'YYYY-MM-DD'), 'YYYY-MM-DD')) AND
+             (to_date(%s, 'YYYY-MM-DD')> to_date(to_char(termin.zacetek, 'YYYY-MM-DD'), 'YYYY-MM-DD')))))""",
+                  [str(soba_tip),kapaciteta,str(soba_tip),kapaciteta,str(zacetek),str(zacetek),str(konec),str(konec)])
+            tab_soba=cur.fetchone()
+            if tab_soba != None:
+                soba = tab_soba[0]
+            else:
+                soba = tab_soba
+
+            cur.close()
+
+            ## Če ne najde izbrane proste sobe, mu izpišemo, da ni ok:
+            if soba is None:
+                napaka='Ta termin je žal zaseden. Prosimo, izberite drugi termin ali drugi tip sobe.'
+                potrdilo=None
+            else:
+                if (uporabnisko_ime == 'admin' and len(ime_gosta_1)==0):  #Splošna poizvedba admina
+                    potrdilo='Izbrana soba je še prosta.'
+                else:
+                    potrdilo='Izbrana soba je še prosta. Kliknite spodaj, da potrdite rezervacijo.'
+                napaka=None
+            print(popust)    
             return bottle.template("main.html",
-                                    uporabnisko_ime = uporabnisko_ime,
-                                    oid=oid,
-                                    cena=cena,
-                                    sporocilo_o_prijavi_gosta=sporocilo_o_prijavi_gosta,
-                                    soba_tip=soba_tip,
-                                    kapaciteta=kapaciteta,
-                                    st_postelj=st_postelj,
-                                    termin=termin,
-                                    zacetek=zacetek,
-                                    zacetek1=zacetek1,
-                                    konec=konec,
-                                    konec1=konec1,
-                                    napaka=None,
-                                    ime_gosta=None,
-                                    priimek_gosta=None,
-                                    tel_st_gosta=None,
-                                    ime_izpis=None,
-                                    potrdilo=None,
-                                    priimek_izpis=None,
-                                    ratio=round(len(st_rez())/60.,1),
-                                    ime_gosta_1=ime_gosta_1,
-                                    priimek_gosta_1=priimek_gosta_1,
-                                    tel_st_gosta_1=tel_st_gosta_1,
-                                    napaka1=None)
+                        uporabnisko_ime = uporabnisko_ime,
+                        oid=oid,
+                        soba_tip=soba_tip,
+                        cena=cena,
+                        sporocilo_o_prijavi_gosta=sporocilo_o_prijavi_gosta,   #user itak nima tega not
+                        kapaciteta=kapaciteta,
+                        st_postelj=st_postelj,
+                        termin=termin,
+                        zacetek=zacetek,
+                        zacetek1=zacetek1,
+                        konec=konec,
+                        konec1=konec1,
+                        rezervacija=None,
+                        ime_gosta=None,
+                        priimek_gosta=None,
+                        tel_st_gosta=None,
+                        ime_izpis=None,
+                        priimek_izpis=None,
+                        ratio=round(len(st_rez())/60.,1),
+                        ime_gosta_1=ime_gosta_1,
+                        priimek_gosta_1=priimek_gosta_1,
+                        tel_st_gosta_1=tel_st_gosta_1,
+                        napaka=napaka,
+                        potrdilo=potrdilo,
+                        popust=popust,
+                        napaka1=None)
+
+                
+        
     else:
-        """Desna stran, vrne poizvedbo za gosta"""
+        """=====================================Desna stran, vrne poizvedbo za gosta==============================================="""
         cur = baza.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        cur.execute("SELECT 1 FROM termin JOIN oseba ON termin.oseba=oseba.oid WHERE ime = %s AND priimek = %s AND tel_st = %s", [ime_gosta, priimek_gosta, tel_st_gosta])
+        cur.execute("SELECT 1 FROM pregled_rezervacij WHERE ime = %s AND priimek = %s AND tel_st = %s", [ime_gosta, priimek_gosta, tel_st_gosta])
         #mi da prvi rezultat, če je to none, se ni prijavil pravilno
         if cur.fetchone() is None:
             cur.close ()
@@ -477,7 +502,7 @@ def vnos_gosta_in_informativni_izracun():
                                     ime_gosta=None,
                                     priimek_gosta=None,
                                     tel_st_gosta=None,
-                                    napaka1="Nepravilen vnos.",
+                                    napaka1="Gosta z danimi podatki ni v bazi.",
                                     potrdilo=None,
                                     ime_izpis=None,
                                     priimek_izpis=None,
@@ -494,10 +519,11 @@ def vnos_gosta_in_informativni_izracun():
                                     tel_st_gosta_1=None,
                                     napaka=None,
                                     zacetek1=None,
-                                    konec1=None)
+                                    konec1=None,
+                                    popust=popust)
         #gremo na osnovno stran, in vse v okencih pobrišemo
         else:
-            cur.execute("SELECT oid FROM oseba WHERE ime = %s AND priimek = %s AND tel_st = %s", [ime_gosta, priimek_gosta, tel_st_gosta])
+            cur.execute("SELECT oid FROM pregled_rezervacij WHERE ime = %s AND priimek = %s AND tel_st = %s", [ime_gosta, priimek_gosta, tel_st_gosta])
             (goid) = tuple(cur)
             termin = rezervacija_1(goid[0][0])
             cur.close ()
@@ -525,14 +551,22 @@ def vnos_gosta_in_informativni_izracun():
                                     tel_st_gosta_1=None,
                                     napaka1=None,
                                     zacetek1=None,
-                                    konec1=None)
+                                    konec1=None,
+                                    popust=popust)
 
 @bottle.route("/<soba_tip:path>/<kapaciteta:int>/<zacetek:path>/<konec:path>/<ime_gosta_1:path>/<priimek_gosta_1:path>/<tel_st_gosta_1:path>/<cena:path>/<st_postelj:path>/rezerviraj_gostu_sobo/")
 def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek_gosta_1,tel_st_gosta_1,cena,st_postelj):
     """Preveri, če je izbrana soba prosta in jo rezervira"""
     (uporabnisko_ime, ime, oid) = get_user()
-    napaka=0
-    potrdilo=0
+
+        # Če niso polno zasedene sobe:
+    if st_postelj=="1":
+        popust=30
+    elif st_postelj=="3":
+        popust=15
+    else:
+        popust=0
+        
     cur = baza.cursor()
     #Poglejmo id osebe, ki ji rezerviramo sobo
     cur.execute("SELECT oid FROM oseba WHERE ime = %s AND priimek = %s AND tel_st = %s", [ime_gosta_1, priimek_gosta_1, tel_st_gosta_1])
@@ -557,7 +591,6 @@ def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek
     ## Če ne najde izbrane proste sobe, mu izpišemo, da ni ok:
     #if cur.fetchone() is None:
     if soba is None:
-        napaka='Ta termin je žal zaseden. Prosimo, izberite drugi termin ali drugi tip sobe.'
         bottle.template("main.html",
                         uporabnisko_ime = uporabnisko_ime,
                         oid=oid,
@@ -568,9 +601,10 @@ def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek
                         st_postelj=st_postelj,
                         termin=rezervacija_admin(),
                         zacetek=zacetek,
-                        zacetek1=None,
+                        popust=popust,
+                        zacetek1=zacetek1,
                         konec=konec,
-                        konec1=None,
+                        konec1=konec1,
                         rezervacija=None,
                         ime_gosta=None,
                         priimek_gosta=None,
@@ -582,18 +616,18 @@ def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek
                         priimek_gosta_1=priimek_gosta_1,
                         tel_st_gosta_1=tel_st_gosta_1,
                         napaka='Ta termin je žal zaseden. Prosimo, izberite drugi termin ali drugi tip sobe.',
-                        potrdilo=potrdilo,
+                        potrdilo=None,
                         napaka1=None)
 
     # Če pa je izbrana soba prosta pa vnesemo rezervacijo v tabelo
     else:
         cur.execute("INSERT INTO termin (soba, zacetek, konec, oseba, popust) VALUES (%s, %s, %s, %s, %s)",
                                                                                 #(cur.fetchone()[0], zacetek, konec, oid_1, 0))
-                                                                                (soba, zacetek, konec, oid_1, 0))
-        potrdilo='Rezervacija je bila uspešno opravljena.'
+                                                                                (soba, zacetek, konec, oid_1, popust))
         bottle.template("main.html",
                         uporabnisko_ime = uporabnisko_ime,
                         oid=oid,
+                        popust=None,
                         soba_tip=None,
                         cena=None,
                         sporocilo_o_prijavi_gosta=None,
@@ -614,7 +648,7 @@ def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek
                         ime_gosta_1=None,
                         priimek_gosta_1=None,
                         tel_st_gosta_1=None,
-                        napaka=napaka,
+                        napaka=None,
                         potrdilo='Rezervacija je bila uspešno opravljena.',
                         napaka1=None)
     cur.close ()
@@ -624,6 +658,15 @@ def rezervacija_sobe_gostu(soba_tip,kapaciteta,zacetek,konec,ime_gosta_1,priimek
 def rezervacija_sobe(soba_tip,kapaciteta,zacetek,konec,cena,st_postelj):
     """Preveri, če je izbrana soba prosta in jo rezervira"""
     (uporabnisko_ime, ime, oid) = get_user()
+
+        # Če niso polno zasedene sobe:
+    if st_postelj=="1":
+        popust=30
+    elif st_postelj=="3":
+        popust=15
+    else:
+        popust=0
+    
     cur = baza.cursor()
     #Poiščemo v bazi izbrano prosto sobo
     cur.execute("""SELECT sid FROM soba LEFT JOIN termin ON soba.sid=termin.soba WHERE soba.tip=%s AND soba.kapaciteta=%s AND sid NOT IN
@@ -651,6 +694,7 @@ def rezervacija_sobe(soba_tip,kapaciteta,zacetek,konec,cena,st_postelj):
                         kapaciteta=kapaciteta,
                         st_postelj=st_postelj,
                         termin=rezervacija(oid),
+                        popust=popust,
                         zacetek=None,
                         konec=None,
                         zacetek1=None,
@@ -673,7 +717,7 @@ def rezervacija_sobe(soba_tip,kapaciteta,zacetek,konec,cena,st_postelj):
     else:
         cur.execute("INSERT INTO termin (soba, zacetek, konec, oseba, popust) VALUES (%s, %s, %s, %s, %s)",
                                                                                 #(cur.fetchone()[0], zacetek, konec, oid, 0))
-                                                                                (soba, zacetek, konec, oid, 0))
+                                                                                (soba, zacetek, konec, oid, popust))
         bottle.template("main.html",
                         uporabnisko_ime = uporabnisko_ime,
                         oid=oid,
@@ -682,7 +726,8 @@ def rezervacija_sobe(soba_tip,kapaciteta,zacetek,konec,cena,st_postelj):
                         sporocilo_o_prijavi_gosta=None,
                         kapaciteta=None,
                         st_postelj=None,
-                        termin=rezervacija_admin(),
+                        popust=None,
+                        termin=rezervacija(oid),
                         zacetek=None,
                         konec=None,
                         zacetek1=None,
@@ -698,7 +743,7 @@ def rezervacija_sobe(soba_tip,kapaciteta,zacetek,konec,cena,st_postelj):
                         priimek_gosta_1=None,
                         tel_st_gosta_1=None,
                         napaka=None,
-                        potrdilo='Rezervacija je bila uspešno opravljena. Pregled vseh svojih rezervacij najdete na desni strani.',
+                        potrdilo='Rezervacija je bila uspešno opravljena.',
                         napaka1=None)
     cur.close ()
     return bottle.redirect("/")
